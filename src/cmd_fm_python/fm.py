@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-
-from __future__ import unicode_literals
-
 import cmd
 import os
+from typing import Any
 
-from commands import commands
-from utils.colorize import render, colorize, Colors
-from client.client import DirbleClient
+from cmd_fm_python.client.client import DirbleClient
+from cmd_fm_python.commands import commands
+from cmd_fm_python.commands.base import Command
+from cmd_fm_python.utils.colorize import Colors, colorize, render
 
 
 class Fm(cmd.Cmd):
@@ -26,18 +24,26 @@ class Fm(cmd.Cmd):
     """)
 
     @classmethod
-    def _bind_handler(cls, cmd):
-        def fn(self, *args):
-            self.stdout_print(cmd.handle(self, *args))
-        setattr(cls, 'do_' + cmd.name, fn)
+    def _bind_handler(cls, command: type[Command]) -> None:
+        def fn(self: Fm, *args: str) -> None:
+            self.stdout_print(command.handle(self, *args))
+
+        setattr(cls, f'do_{command.name}', fn)
 
     @classmethod
-    def _bind_help(cls, cmd):
-        def fn(self, *args):
-            self.stdout_print(cmd.help())
-        setattr(cls, 'help_' + cmd.name, fn)
+    def _bind_help(cls, command: type[Command]) -> None:
+        def fn(self: Fm, *args: str) -> None:
+            self.stdout_print(command.help())
 
-    def __init__(self, client=None, test=False, *args, **kwargs):
+        setattr(cls, f'help_{command.name}', fn)
+
+    def __init__(
+        self,
+        client: DirbleClient | None = None,
+        test: bool = False,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         for command in commands:
             Fm._bind_handler(command)
             Fm._bind_help(command)
@@ -49,19 +55,18 @@ class Fm(cmd.Cmd):
         if not test:
             self.intro = self.onecmd('genres withintro')
 
-    def stdout_print(self, text, end='\n'):
+    def stdout_print(self, text: str, end: str = '\n') -> None:
         self.stdout.write(text + end)
 
-    def default(self, arg):
+    def default(self, arg: str) -> None:
         self.stdout_print(self.INDENT + colorize(Colors.RED, 'Unknown command ') + arg)
 
-    def emptyline(self):
-        # Do not repeat last used command when user entered empty line
+    def emptyline(self) -> None:
         pass
 
 
-if __name__ == '__main__':
-    os.environ['VLC_VERBOSE'] = '-1'  # Hide libvlc debug messages
+def main() -> None:
+    os.environ['VLC_VERBOSE'] = '-1'
     api_key = os.environ.get('DIRBLE_API_KEY')
 
     if api_key:

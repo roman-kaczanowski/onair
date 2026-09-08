@@ -1,7 +1,17 @@
-from __future__ import absolute_import
-
-from . import help, genres, play, pause, resume, next, previous, info, volume, mute, unmute, quit
-
+from . import (
+    genres,
+    help,
+    info,
+    mute,
+    next,
+    pause,
+    play,
+    previous,
+    quit,
+    resume,
+    unmute,
+    volume,
+)
 
 commands = [
     help.Help,
@@ -16,7 +26,7 @@ commands = [
     previous.Prev,
     previous.Back,
     info.Info,
-    info.I,
+    info.InfoI,
     info.Information,
     volume.Volume,
     volume.V,

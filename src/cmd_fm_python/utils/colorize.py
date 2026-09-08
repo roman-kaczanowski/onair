@@ -1,9 +1,7 @@
-from __future__ import unicode_literals
-
 import re
 
 
-class Colors(object):
+class Colors:
     ENDC = 0
 
     LIME = 36
@@ -26,16 +24,16 @@ class Colors(object):
         'b': BLUE,
         'p': PURPLE,
         'lb': LBLUE,
-        'bk': BLACK
+        'bk': BLACK,
     }
 
 
-def colorize(color, text):
-    return '\033[{}m{}\033[{}m'.format(color, text, Colors.ENDC)
+def colorize(color: int, text: str) -> str:
+    return f'\033[{color}m{text}\033[{Colors.ENDC}m'
 
 
-def render(template):
-    pattern = '(?i)({{(e-)?[a-z]{1}}})'
+def render(template: str) -> str:
+    pattern = r'(?i)({{(e-)?[a-z]{1}}})'
     matches = [m[0].replace('{{', '').replace('}}', '') for m in re.findall(pattern, template)]
     rendered_text = template
 
@@ -47,12 +45,12 @@ def render(template):
 
         if color is not None:
             if 'e-' in match:
-                rendered_color = '\033[0m\033[{}m'.format(color)
+                rendered_color = f'\033[0m\033[{color}m'
             else:
-                rendered_color = '\033[{}m'.format(color)
+                rendered_color = f'\033[{color}m'
 
             rendered_text = rendered_text.replace('{{' + match + '}}', rendered_color)
         else:
-            raise ValueError('Unexpected tag: {}'.format('{{' + match + '}}'))
+            raise ValueError('Unexpected tag: {{' + match + '}}')
 
     return rendered_text

@@ -1,33 +1,33 @@
-from __future__ import unicode_literals
-
-import requests
 import string
 from contextlib import closing
 from random import shuffle
+from typing import Any
+
+import requests
 
 
-class DirbleClient(object):
+class DirbleClient:
     DOMAIN = 'http://api.dirble.com/v2'
     GENRES = '/categories/{}'
     STATIONS = '/category/{}/stations'
 
-    genres = None
-    current_category_id = None
-    current_stations = None
-    active_station = None
+    genres: list[dict[str, Any]] | None = None
+    current_category_id: Any = None
+    current_stations: list[dict[str, Any]] | None = None
+    active_station: dict[str, Any] | None = None
 
-    def __init__(self, api_key):
+    def __init__(self, api_key: str) -> None:
         self.api_key = api_key
         self.genres = self.get_genres()
 
     @property
-    def _uri_token(self):
-        return '?token={}'.format(self.api_key)
+    def _uri_token(self) -> str:
+        return f'?token={self.api_key}'
 
-    def build_request_uri(self, endpoint, arg=''):
+    def build_request_uri(self, endpoint: str, arg: str | int = '') -> str:
         return self.DOMAIN + endpoint.format(arg) + self._uri_token
 
-    def get_genres(self):
+    def get_genres(self) -> list[dict[str, Any]]:
         response = requests.get(self.build_request_uri(self.GENRES))
 
         if response.ok:
@@ -35,10 +35,10 @@ class DirbleClient(object):
         return []
 
     @property
-    def genres_titles(self):
-        titles = dict()
+    def genres_titles(self) -> dict[str, list[str]]:
+        titles: dict[str, list[str]] = {}
 
-        for title in sorted([g.get('title', '') for g in self.genres]):
+        for title in sorted([g.get('title', '') for g in self.genres or []]):
             first_letter = title[0].upper()
             if title[0] in string.digits:
                 first_letter = '#'
@@ -46,31 +46,30 @@ class DirbleClient(object):
 
         return titles
 
-    def get_stations(self):
+    def get_stations(self) -> list[dict[str, Any]]:
         response = requests.get(self.build_request_uri(self.STATIONS, self.current_category_id))
 
         if response.ok:
             return response.json()
         return []
 
-    def search_genre(self, genre_name):
-        for genre in sorted(self.genres, key=lambda x: (len(x.get('title', '')), x.get('title', ''))):
+    def search_genre(self, genre_name: str) -> dict[str, Any] | None:
+        for genre in sorted(self.genres or [], key=lambda x: (len(x.get('title', '')), x.get('title', ''))):
             if genre_name.lower() in genre.get('title', '').lower():
                 return genre
         return None
 
-    def update_active_station(self, category_id):
+    def update_active_station(self, category_id: Any) -> dict[str, Any] | None:
         self.active_station = None
         self.current_category_id = category_id
 
         if not self.current_stations:
-            # Keep list of current genre stations in memory to prevent excess requests
             self.current_stations = self.get_stations()
 
         if not self.current_stations:
             return None
 
-        shuffle(self.current_stations)  # Increase our chances to take more varied streams
+        shuffle(self.current_stations)
 
         for station in self.current_stations:
             stream_url = station['streams'][0].get('stream', '') if len(station.get('streams', [])) else ''
@@ -79,7 +78,7 @@ class DirbleClient(object):
 
             try:
                 with closing(requests.get(stream_url, stream=True)) as r:
-                    if r.ok:  # Take the first "in air" stream
+                    if r.ok:
                         self.active_station = station
                         break
             except requests.exceptions.ConnectionError:
@@ -88,11 +87,12 @@ class DirbleClient(object):
         return self.active_station
 
     @property
-    def stream_url(self):
-        return self.active_station['streams'][0].get('stream', '') \
-            if self.active_station and len(self.active_station.get('streams', [])) else ''
+    def stream_url(self) -> str:
+        if self.active_station and len(self.active_station.get('streams', [])):
+            return self.active_station['streams'][0].get('stream', '')
+        return ''
 
-    def get_stream(self, category_id, renew_active_station=False):
+    def get_stream(self, category_id: Any, renew_active_station: bool = False) -> str:
         if not self.active_station or self.current_category_id != category_id or renew_active_station:
             return self.stream_url if self.update_active_station(category_id) else ''
         return self.stream_url

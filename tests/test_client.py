@@ -1,33 +1,25 @@
-from __future__ import unicode_literals
-
-import unittest
-
-from .mock_client import MockClient
+from mock_client import MockClient
 
 
-class TestFm(unittest.TestCase):
-    def setUp(self):
-        self.client = MockClient('test_key')
-
-    def test_get_genres(self):
-        self.assertTrue(bool(self.client.get_genres()))
-        self.assertIsInstance(self.client.get_genres(), list)
-
-    def test_genres_titles(self):
-        self.assertEqual(self.client.genres_titles,
-                         {
-                             'T': ['Trance', ],
-                             'R': ['Rock', ],
-                             'D': ['Dance', 'Dancehall'],
-                         })
-
-    def test_search_genre(self):
-        self.assertEqual(self.client.search_genre('rock')['id'], 2)
-        self.assertEqual(self.client.search_genre('dancehall')['id'], 4)
-        self.assertEqual(self.client.search_genre('wrong_genre'), None)
-        self.assertEqual(self.client.search_genre('ock')['id'], 2)  # Partial search
-        self.assertEqual(self.client.search_genre('ance')['id'], 3)  # Partial search in sorted data
+def test_get_genres() -> None:
+    client = MockClient('test_key')
+    assert bool(client.get_genres())
+    assert isinstance(client.get_genres(), list)
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_genres_titles() -> None:
+    client = MockClient('test_key')
+    assert client.genres_titles == {
+        'T': ['Trance'],
+        'R': ['Rock'],
+        'D': ['Dance', 'Dancehall'],
+    }
+
+
+def test_search_genre() -> None:
+    client = MockClient('test_key')
+    assert client.search_genre('rock')['id'] == 2
+    assert client.search_genre('dancehall')['id'] == 4
+    assert client.search_genre('wrong_genre') is None
+    assert client.search_genre('ock')['id'] == 2
+    assert client.search_genre('ance')['id'] == 3
