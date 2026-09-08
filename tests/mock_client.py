@@ -1,6 +1,6 @@
 from typing import Any
 
-from cmd_fm_python.client.client import DirbleClient
+from onair.client.client import DirbleClient
 
 
 class MockClient(DirbleClient):

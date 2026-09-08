@@ -1,6 +1,6 @@
-# cmd.fm-python
+# onair
 
-[![CI](https://img.shields.io/github/actions/workflow/status/roman-kaczanowski/cmd.fm-python/quality-checks.yml?branch=main&style=flat-square&label=CI)](https://github.com/roman-kaczanowski/cmd.fm-python/actions/workflows/quality-checks.yml) [![PyPI](https://img.shields.io/pypi/v/cmd.fm-python?style=flat-square)](https://pypi.org/project/cmd.fm-python/) [![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://docs.python.org/3/) [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/roman-kaczanowski/onair/quality-checks.yml?branch=main&style=flat-square&label=CI)](https://github.com/roman-kaczanowski/onair/actions/workflows/quality-checks.yml) [![PyPI](https://img.shields.io/pypi/v/onair?style=flat-square)](https://pypi.org/project/onair/) [![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://docs.python.org/3/) [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
 Interactive REPL shell radio
 

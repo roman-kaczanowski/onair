@@ -1,6 +1,6 @@
 from typing import Any
 
-from cmd_fm_python.commands.base import Command
+from onair.commands.base import Command
 
 
 class Previous(Command):
@@ -14,7 +14,7 @@ class Previous(Command):
     description = 'Skips previous track'
 
     @staticmethod
-    def handle(fm: Any, *args: str) -> str:
+    def handle(app: Any, *args: str) -> str:
         return 'debug: prev/previous/back command output.'
 
 

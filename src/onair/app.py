@@ -2,37 +2,37 @@ import cmd
 import os
 from typing import Any
 
-from cmd_fm_python.client.client import DirbleClient
-from cmd_fm_python.commands import commands
-from cmd_fm_python.commands.base import Command
-from cmd_fm_python.utils.colorize import Colors, colorize, render
+from onair.client.client import DirbleClient
+from onair.commands import commands
+from onair.commands.base import Command
+from onair.utils.colorize import Colors, colorize, render
 
 
-class Fm(cmd.Cmd):
+class App(cmd.Cmd):
     INDENT = ' ' * 4
 
-    prompt = colorize(Colors.LIME, '$ fm ')
+    prompt = colorize(Colors.LIME, 'onair> ')
     intro = render("""
-                 _   ___
-     ___ _____ _| | |  _|_____
-    |  _|     | . |_|  _|     |
-    |___|_|_|_|___|_|_| |_|_|_|
+      ___  _ __   __ _(_)_ __
+     / _ \\| '_ \\ / _` | | '__|
+    | (_) | | | | (_| | | |
+     \\___/|_| |_|\\__,_|_|_|
     ---------------------------------------------------------------
-    {{y}}Welcome to cmd.fm! Use{{e}} play {{y}}command to begin listening.
+    {{y}}Welcome to onair. Use{{e}} play {{y}}to begin listening.
     For example:{{e}} play chillout{{y}}, {{e}}play dubstep {{y}}etc...
-    {{g}}You can use{{e}} help {{g}}command to see all cmd.fm commands.{{e}}
+    {{g}}Use{{e}} help {{g}}to see all commands.{{e}}
     """)
 
     @classmethod
     def _bind_handler(cls, command: type[Command]) -> None:
-        def fn(self: Fm, *args: str) -> None:
+        def fn(self: App, *args: str) -> None:
             self.stdout_print(command.handle(self, *args))
 
         setattr(cls, f'do_{command.name}', fn)
 
     @classmethod
     def _bind_help(cls, command: type[Command]) -> None:
-        def fn(self: Fm, *args: str) -> None:
+        def fn(self: App, *args: str) -> None:
             self.stdout_print(command.help())
 
         setattr(cls, f'help_{command.name}', fn)
@@ -45,8 +45,8 @@ class Fm(cmd.Cmd):
         **kwargs: Any,
     ) -> None:
         for command in commands:
-            Fm._bind_handler(command)
-            Fm._bind_help(command)
+            App._bind_handler(command)
+            App._bind_help(command)
 
         self.client = client
         self.player = None
@@ -71,6 +71,6 @@ def main() -> None:
 
     if api_key:
         client = DirbleClient(api_key)
-        Fm(client=client).cmdloop()
+        App(client=client).cmdloop()
     else:
         print(render('{{r}}Please, specify your{{e}} DIRBLE_API_KEY {{r}}in environment variables.{{e}}'))

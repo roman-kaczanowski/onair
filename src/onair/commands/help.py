@@ -1,7 +1,7 @@
 from typing import Any
 
-from cmd_fm_python.commands.base import Command
-from cmd_fm_python.utils.colorize import render
+from onair.commands.base import Command
+from onair.utils.colorize import render
 
 
 class Help(Command):
@@ -15,21 +15,21 @@ class Help(Command):
     description = 'Lists all available commands or shows detailed info about selected command.'
 
     @staticmethod
-    def handle(fm: Any, *args: str) -> str:
+    def handle(app: Any, *args: str) -> str:
         arg = args[0] if args else ''
 
         if arg:
-            for command in fm.commands:
+            for command in app.commands:
                 if arg == command.name:
                     return command.help()
             return render(
-                fm.INDENT
+                app.INDENT
                 + '{{r}}Command{{e-y}} '
                 + arg
                 + ' {{e-r}}not found. You can use{{e}} help {{r}}command to see all available commands.{{e}}'
             )
 
         main_help = ''
-        for command in fm.commands:
+        for command in app.commands:
             main_help += command.one_line_help()
         return main_help

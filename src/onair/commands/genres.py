@@ -1,7 +1,7 @@
 from typing import Any
 
-from cmd_fm_python.commands.base import Command
-from cmd_fm_python.utils.colorize import Colors, colorize, render
+from onair.commands.base import Command
+from onair.utils.colorize import Colors, colorize, render
 
 
 class Genres(Command):
@@ -11,28 +11,28 @@ class Genres(Command):
     description = 'Lists all available genres.'
 
     @staticmethod
-    def handle(fm: Any, *args: str) -> str:
+    def handle(app: Any, *args: str) -> str:
         arg = args[0] if args else ''
-        titles = fm.client.genres_titles
+        titles = app.client.genres_titles
         titles_keys = sorted(titles.keys())
 
         header = render(
             '\n'
-            + fm.INDENT
+            + app.INDENT
             + '{{y}}--- GENRES ----------------------------------------------------{{e}}'
             + '\n\n'
-            + fm.INDENT
+            + app.INDENT
         )
 
         footer = render(
-            '\n\n' + fm.INDENT + '{{y}}Start listening by typing{{e}} play {genre} {{y}}command: {{e}}play kpop\n'
+            '\n\n' + app.INDENT + '{{y}}Start listening by typing{{e}} play {genre} {{y}}command: {{e}}play kpop\n'
         )
 
         if arg == 'withintro':
-            header = fm.intro + header
+            header = app.intro + header
             footer = (
                 render(
-                    '\n' + fm.INDENT + '{{l}}... {{e-y}}Show more available genres via{{e}} genres {{y}}command{{e}}'
+                    '\n' + app.INDENT + '{{l}}... {{e-y}}Show more available genres via{{e}} genres {{y}}command{{e}}'
                 )
                 + footer
             )
@@ -45,7 +45,7 @@ class Genres(Command):
 
         return (
             header
-            + ('\n' + fm.INDENT).join(
+            + ('\n' + app.INDENT).join(
                 colorize(Colors.LIME, k + ' - ') + colorize(Colors.LIME, ', ').join(titles[k]) for k in titles_keys
             )
             + footer
