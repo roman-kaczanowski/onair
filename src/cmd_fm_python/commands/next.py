@@ -1,21 +1,27 @@
-from __future__ import unicode_literals, absolute_import
+from typing import Any
 
-from .base import Command
+from cmd_fm_python.commands.base import Command
 
 
 class Next(Command):
     name = 'next'
     pattern = 'next'
-    example = ('next', 'skip',)
+    example = (
+        'next',
+        'skip',
+    )
     description = 'Skips next track.'
 
     @staticmethod
-    def handle(self, *args):
+    def handle(fm: Any, *args: str) -> str:
         return 'debug: next/skip command output'
 
 
 class Skip(Next):
     name = 'skip'
     pattern = 'skip'
-    example = ('skip', 'next',)
+    example = (
+        'skip',
+        'next',
+    )
     show_in_main_help = False

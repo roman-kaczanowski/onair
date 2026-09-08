@@ -1,28 +1,40 @@
-from __future__ import unicode_literals, absolute_import
+from typing import Any
 
-from .base import Command
+from cmd_fm_python.commands.base import Command
 
 
 class Info(Command):
     name = 'info'
     pattern = 'info'
-    example = ('info', 'i', 'information',)
+    example = (
+        'info',
+        'i',
+        'information',
+    )
     description = 'Shows more information about current track.'
 
     @staticmethod
-    def handle(self, *args):
+    def handle(fm: Any, *args: str) -> str:
         return 'debug: i/info/information command output'
 
 
-class I(Info):
+class InfoI(Info):
     name = 'i'
     pattern = 'i'
-    example = ('i', 'info', 'information',)
+    example = (
+        'i',
+        'info',
+        'information',
+    )
     show_in_main_help = False
 
 
 class Information(Info):
     name = 'information'
     pattern = 'information'
-    example = ('information', 'i', 'info',)
+    example = (
+        'information',
+        'i',
+        'info',
+    )
     show_in_main_help = False

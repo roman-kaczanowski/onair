@@ -1,5 +1,9 @@
-# Command-line interface for cmd.fm
+# cmd.fm-python
 
-[![Build Status](https://travis-ci.org/roman-kachanovsky/cmd.fm-python.svg?branch=master)](https://travis-ci.org/roman-kachanovsky/cmd.fm-python)
+[![CI](https://img.shields.io/github/actions/workflow/status/roman-kaczanowski/cmd.fm-python/quality-checks.yml?branch=main&style=flat-square&label=CI)](https://github.com/roman-kaczanowski/cmd.fm-python/actions/workflows/quality-checks.yml) [![PyPI](https://img.shields.io/pypi/v/cmd.fm-python?style=flat-square)](https://pypi.org/project/cmd.fm-python/) [![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://docs.python.org/3/) [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
-Current status: in development
+Interactive REPL shell radio
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and releases.
+
+MIT. Replace `LICENSE` if you need a different license.
