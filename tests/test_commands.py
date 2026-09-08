@@ -5,12 +5,12 @@ from unittest import mock
 import pytest
 from mock_client import MockClient
 
-from cmd_fm_python.fm import Fm
+from onair.app import App
 
 
-def _create() -> tuple[Fm, mock.MagicMock]:
+def _create() -> tuple[App, mock.MagicMock]:
     mock_stdout = mock.create_autospec(sys.stdout)
-    cli = Fm(stdin=mock.create_autospec(sys.stdin), stdout=mock_stdout, client=MockClient('test_key'), test=True)
+    cli = App(stdin=mock.create_autospec(sys.stdin), stdout=mock_stdout, client=MockClient('test_key'), test=True)
     return cli, mock_stdout
 
 

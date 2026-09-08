@@ -1,6 +1,6 @@
 from typing import Any
 
-from cmd_fm_python.commands.base import Command
+from onair.commands.base import Command
 
 
 class Next(Command):
@@ -13,7 +13,7 @@ class Next(Command):
     description = 'Skips next track.'
 
     @staticmethod
-    def handle(fm: Any, *args: str) -> str:
+    def handle(app: Any, *args: str) -> str:
         return 'debug: next/skip command output'
 
 

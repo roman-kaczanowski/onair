@@ -1,7 +1,7 @@
 import sys
 from typing import Any
 
-from cmd_fm_python.commands.base import Command
+from onair.commands.base import Command
 
 
 class Quit(Command):
@@ -11,12 +11,12 @@ class Quit(Command):
         'quit',
         'q',
     )
-    description = 'Close cmd.fm and turn off music.'
+    description = 'Quit and turn off music.'
 
     @staticmethod
-    def handle(fm: Any, *args: str) -> str:
-        if fm.player:
-            fm.player.stop()
+    def handle(app: Any, *args: str) -> str:
+        if app.player:
+            app.player.stop()
         sys.exit()
 
 

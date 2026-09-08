@@ -1,4 +1,4 @@
-from cmd_fm_python.utils.colorize import Colors, colorize, render
+from onair.utils.colorize import Colors, colorize, render
 
 
 def test_colorize() -> None:

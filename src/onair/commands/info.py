@@ -1,6 +1,6 @@
 from typing import Any
 
-from cmd_fm_python.commands.base import Command
+from onair.commands.base import Command
 
 
 class Info(Command):
@@ -14,7 +14,7 @@ class Info(Command):
     description = 'Shows more information about current track.'
 
     @staticmethod
-    def handle(fm: Any, *args: str) -> str:
+    def handle(app: Any, *args: str) -> str:
         return 'debug: i/info/information command output'
 
 

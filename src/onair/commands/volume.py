@@ -1,7 +1,7 @@
 from typing import Any
 
-from cmd_fm_python.commands.base import Command
-from cmd_fm_python.utils.colorize import Colors, colorize
+from onair.commands.base import Command
+from onair.utils.colorize import Colors, colorize
 
 
 class Volume(Command):
@@ -15,19 +15,19 @@ class Volume(Command):
     description = 'Set volume level in percentage.'
 
     @staticmethod
-    def handle(fm: Any, *args: str) -> str:
-        if fm.player:
+    def handle(app: Any, *args: str) -> str:
+        if app.player:
             arg = args[0] if args else ''
 
             if not arg:
-                return fm.INDENT + colorize(Colors.GREEN, 'Current volume is ') + str(fm.player.get_volume())
+                return app.INDENT + colorize(Colors.GREEN, 'Current volume is ') + str(app.player.get_volume())
 
             try:
-                fm.player.set_volume(int(arg))
+                app.player.set_volume(int(arg))
             except ValueError:
-                return fm.INDENT + colorize(Colors.RED, 'Volume value ') + arg + colorize(Colors.RED, " isn't valid.")
-            return fm.INDENT + colorize(Colors.GREEN, 'Set volume to ') + arg
-        return fm.INDENT + colorize(Colors.RED, 'No active players found.')
+                return app.INDENT + colorize(Colors.RED, 'Volume value ') + arg + colorize(Colors.RED, " isn't valid.")
+            return app.INDENT + colorize(Colors.GREEN, 'Set volume to ') + arg
+        return app.INDENT + colorize(Colors.RED, 'No active players found.')
 
 
 class V(Volume):

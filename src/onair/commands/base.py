@@ -1,10 +1,10 @@
 from typing import Any
 
-from cmd_fm_python.utils.colorize import Colors, colorize
+from onair.utils.colorize import Colors, colorize
 
 
 class Command:
-    """REPL command bound onto the Fm shell."""
+    """REPL command bound onto the App shell."""
 
     name = ''
     pattern = ''
@@ -13,8 +13,8 @@ class Command:
     show_in_main_help = True
 
     @staticmethod
-    def handle(fm: Any, *args: str) -> str:
-        """Run the command. `fm` is the Fm shell instance."""
+    def handle(app: Any, *args: str) -> str:
+        """Run the command. `app` is the App shell instance."""
         raise NotImplementedError
 
     @classmethod

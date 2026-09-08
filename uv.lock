@@ -161,47 +161,6 @@ wheels = [
 ]
 
 [[package]]
-name = "cmd-fm-python"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "python-vlc" },
-    { name = "requests" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "ipython" },
-    { name = "mdformat" },
-    { name = "mdformat-gfm" },
-    { name = "mdformat-tables" },
-    { name = "poethepoet" },
-    { name = "pre-commit" },
-    { name = "ruff" },
-]
-test = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "python-vlc" },
-    { name = "requests" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "ipython" },
-    { name = "mdformat" },
-    { name = "mdformat-gfm" },
-    { name = "mdformat-tables" },
-    { name = "poethepoet" },
-    { name = "pre-commit" },
-    { name = "ruff" },
-]
-test = [{ name = "pytest" }]
-
-[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -402,6 +361,47 @@ sdist = { url = "https://files.pythonhosted.org/packages/24/bf/d1bda4f6168e0b2e9
 wheels = [
     { url = "https://files.pythonhosted.org/packages/88/b2/d0896bdcdc8d28a7fc5717c305f1a861c26e18c05047949fb371034d98bd/nodeenv-1.10.0-py2.py3-none-any.whl", hash = "sha256:5bb13e3eed2923615535339b3c620e76779af4cb4c6a90deccc9e36b274d3827", size = 23438, upload-time = "2025-12-20T14:08:52.782Z" },
 ]
+
+[[package]]
+name = "onair"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "python-vlc" },
+    { name = "requests" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "ipython" },
+    { name = "mdformat" },
+    { name = "mdformat-gfm" },
+    { name = "mdformat-tables" },
+    { name = "poethepoet" },
+    { name = "pre-commit" },
+    { name = "ruff" },
+]
+test = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "python-vlc" },
+    { name = "requests" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "ipython" },
+    { name = "mdformat" },
+    { name = "mdformat-gfm" },
+    { name = "mdformat-tables" },
+    { name = "poethepoet" },
+    { name = "pre-commit" },
+    { name = "ruff" },
+]
+test = [{ name = "pytest" }]
 
 [[package]]
 name = "packaging"
