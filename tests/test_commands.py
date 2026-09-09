@@ -7,6 +7,7 @@ from mock_client import MockClient
 
 from onair.app import App
 from onair.client.client import Station
+from onair.commands.volume import parse_volume
 
 
 def _create() -> tuple[App, mock.MagicMock]:
@@ -122,3 +123,55 @@ def test_previous_without_history() -> None:
     cli, mock_stdout = _create()
     assert not cli.onecmd('previous')
     assert 'No previous station' in _cli_response(mock_stdout)
+
+
+def test_stop_without_player() -> None:
+    cli, mock_stdout = _create()
+    assert not cli.onecmd('stop')
+    assert 'No active players' in _cli_response(mock_stdout)
+
+
+def test_stop_playback() -> None:
+    cli, mock_stdout = _create()
+    player = mock.Mock()
+    cli.player = player
+    assert not cli.onecmd('stop')
+    player.stop.assert_called_once()
+    assert cli.player is None
+    assert 'Stopped' in _cli_response(mock_stdout)
+
+
+def test_volume_relative() -> None:
+    cli, mock_stdout = _create()
+    cli.player = mock.Mock()
+    cli.player.get_volume.return_value = 40
+    assert not cli.onecmd('volume +10')
+    cli.player.set_volume.assert_called_once_with(50)
+    assert 'Set volume to 50' in _cli_response(mock_stdout)
+
+
+def test_parse_volume() -> None:
+    assert parse_volume(40, '45') == 45
+    assert parse_volume(40, '+10') == 50
+    assert parse_volume(40, '-15') == 25
+    assert parse_volume(95, '+10') == 100
+    assert parse_volume(5, '-10') == 0
+    assert parse_volume(40, 'nope') is None
+
+
+def test_complete_commands_and_genres() -> None:
+    from prompt_toolkit.completion import CompleteEvent
+    from prompt_toolkit.document import Document
+
+    from onair.app import OnairCompleter
+
+    cli, _mock_stdout = _create()
+    completer = OnairCompleter(cli)
+
+    def texts(line: str) -> list[str]:
+        return [item.text for item in completer.get_completions(Document(line, len(line)), CompleteEvent())]
+
+    assert 'play' in texts('pl')
+    assert 'rock' in texts('play ro')
+    assert 'help' in texts('he')
+    assert 'play' in texts('help p')

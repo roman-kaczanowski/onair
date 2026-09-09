@@ -9,6 +9,7 @@ from . import (
     previous,
     quit,
     resume,
+    stop,
     unmute,
     volume,
 )
@@ -20,6 +21,7 @@ commands = [
     play.P,
     pause.Pause,
     resume.Resume,
+    stop.Stop,
     next.Next,
     next.Skip,
     previous.Previous,

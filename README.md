@@ -9,12 +9,16 @@ uv sync
 uv run onair
 ```
 
+Tab completion, command history, and `volume +10` / `volume -10` are available in the prompt.
+
 ```text
 onair> play chillout
 onair> genres
 onair> info
+onair> volume +10
 onair> next
 onair> previous
+onair> stop
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and releases.
