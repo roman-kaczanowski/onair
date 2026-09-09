@@ -76,9 +76,7 @@ shell_interpreter = "bash"
 
 [tool.poe.tasks]
 lock = "uv lock"
-
 install = "uv sync"
-
 hooks = "pre-commit install"
 update = "uv lock --upgrade"
 upgrade.sequence = ["update", "install"]

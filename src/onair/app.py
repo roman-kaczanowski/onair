@@ -2,7 +2,7 @@ import cmd
 import os
 from typing import Any
 
-from onair.client.client import DirbleClient
+from onair.client.client import RadioBrowserClient
 from onair.commands import commands
 from onair.commands.base import Command
 from onair.utils.colorize import Colors, colorize, render
@@ -39,7 +39,7 @@ class App(cmd.Cmd):
 
     def __init__(
         self,
-        client: DirbleClient | None = None,
+        client: RadioBrowserClient | None = None,
         test: bool = False,
         *args: Any,
         **kwargs: Any,
@@ -67,10 +67,4 @@ class App(cmd.Cmd):
 
 def main() -> None:
     os.environ['VLC_VERBOSE'] = '-1'
-    api_key = os.environ.get('DIRBLE_API_KEY')
-
-    if api_key:
-        client = DirbleClient(api_key)
-        App(client=client).cmdloop()
-    else:
-        print(render('{{r}}Please, specify your{{e}} DIRBLE_API_KEY {{r}}in environment variables.{{e}}'))
+    App(client=RadioBrowserClient()).cmdloop()
