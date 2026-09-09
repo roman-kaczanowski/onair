@@ -7,6 +7,24 @@ from onair.player.player import Player
 from onair.utils.colorize import Colors, colorize
 
 
+def start_stream(app: Any, stream: str) -> bool:
+    if app.player:
+        app.player.stop()
+    app.player = Player(stream)
+    app.player.play()
+    for _ in range(5):
+        if app.player.is_playing:
+            return True
+        time.sleep(1)
+    return False
+
+
+def now_playing(app: Any) -> str:
+    station = app.client.active_station if app.client else None
+    name = station.name if station else ''
+    return app.INDENT + colorize(Colors.BLUE, '\u25b6 ' + name)
+
+
 class Play(Command):
     name = 'play'
     pattern = 'play {genre}'
@@ -23,39 +41,29 @@ class Play(Command):
         if not arg:
             if app.player and app.player.is_paused:
                 app.player.play()
-                return app.INDENT + colorize(Colors.BLUE, '\u25b6 ' + app.client.active_station['name'])
+                return now_playing(app)
+
+            if not app.client or not app.client.genres:
+                return app.INDENT + colorize(Colors.RED, 'No genres available. Please, try again later.')
 
             app.stdout_print(app.INDENT + colorize(Colors.GRAY, 'Pick random genre...'))
             arg = random.choice([genre.get('title', '') for genre in app.client.genres])
 
-        genre = app.client.search_genre(arg)
-        genre_id = genre.get('id') if genre else None
+        genre = app.client.search_genre(arg) if app.client else None
+        tag = genre.get('id') if genre else None
 
-        if genre_id is None:
+        if not tag:
             return app.INDENT + colorize(Colors.RED, 'Genre ') + arg + colorize(Colors.RED, ' not found.')
 
         app.stdout_print(app.INDENT + colorize(Colors.GREEN, 'Tuning in...'))
         app.stdout_print(app.INDENT + colorize(Colors.GREEN, 'Starting genre: ') + genre.get('title', ''))
 
-        num_of_tries = 0
-        while num_of_tries < 3:
-            num_of_tries += 1
-            stream = app.client.get_stream(genre_id, renew_active_station=True)
-
+        for _ in range(3):
+            stream = app.client.get_stream(tag, renew_active_station=True)
             if not stream:
                 return app.INDENT + colorize(Colors.RED, 'No active stations found... Please, try another genre.')
-
-            if app.player:
-                app.player.stop()
-            app.player = Player(stream)
-            app.player.play()
-
-            num_of_checks = 0
-            while num_of_checks < 5:
-                num_of_checks += 1
-                time.sleep(1)
-                if app.player.is_playing:
-                    return app.INDENT + colorize(Colors.BLUE, '\u25b6 ' + app.client.active_station['name'])
+            if start_stream(app, stream):
+                return now_playing(app)
         return app.INDENT + colorize(Colors.RED, 'No active stations found... Please, try another genre.')
 
 

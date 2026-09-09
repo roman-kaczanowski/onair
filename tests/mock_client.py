@@ -1,40 +1,29 @@
-from typing import Any
-
-from onair.client.client import DirbleClient
+from onair.client.client import RadioBrowserClient, Station
 
 
-class MockClient(DirbleClient):
-    def get_genres(self) -> list[dict[str, Any]]:
+class MockClient(RadioBrowserClient):
+    def __init__(self) -> None:
+        super().__init__(servers=[])
+
+    def get_genres(self) -> list[dict[str, str]]:
         return [
-            {
-                'id': 1,
-                'title': 'Trance',
-                'description': 'stations that plays commercial and other things in trance-music genre.',
-                'slug': 'trance',
-                'ancestry': '14',
-            },
-            {
-                'id': 2,
-                'title': 'Rock',
-                'description': 'simple rock. from elvis to metallica and like hardrock as iron maiden.',
-                'slug': 'rock',
-                'ancestry': None,
-            },
-            {
-                'id': 3,
-                'title': 'Dance',
-                'description': "dance music, the new from 80's and 90's, like bubblegum and more.",
-                'slug': 'dance',
-                'ancestry': '14',
-            },
-            {
-                'id': 4,
-                'title': 'Dancehall',
-                'description': 'dancehall music.',
-                'slug': 'dancehall',
-                'ancestry': '14',
-            },
+            {'id': 'trance', 'title': 'trance'},
+            {'id': 'rock', 'title': 'rock'},
+            {'id': 'dance', 'title': 'dance'},
+            {'id': 'dancehall', 'title': 'dancehall'},
         ]
 
-    def get_stations(self) -> list[dict[str, Any]]:
-        return []
+    def search_stations(
+        self,
+        *,
+        tag: str | None = None,
+        language: str | None = None,
+        countrycode: str | None = None,
+    ) -> list[Station]:
+        return [
+            Station(uuid='rock-1', name='Rock FM', url='http://example.test/rock-1', tags='rock'),
+            Station(uuid='rock-2', name='Rock Live', url='http://example.test/rock-2', tags='rock'),
+        ]
+
+    def resolve_url(self, station: Station) -> str:
+        return station.url

@@ -1,6 +1,8 @@
 from typing import Any
 
 from onair.commands.base import Command
+from onair.commands.play import now_playing, start_stream
+from onair.utils.colorize import Colors, colorize
 
 
 class Previous(Command):
@@ -11,11 +13,19 @@ class Previous(Command):
         'prev',
         'back',
     )
-    description = 'Skips previous track'
+    description = 'Play the previous station.'
 
     @staticmethod
     def handle(app: Any, *args: str) -> str:
-        return 'debug: prev/previous/back command output.'
+        if not app.client:
+            return app.INDENT + colorize(Colors.RED, 'No previous station.')
+
+        stream = app.client.previous_station()
+        if not stream:
+            return app.INDENT + colorize(Colors.RED, 'No previous station.')
+        if start_stream(app, stream):
+            return now_playing(app)
+        return app.INDENT + colorize(Colors.RED, 'Failed to play the previous station.')
 
 
 class Prev(Previous):

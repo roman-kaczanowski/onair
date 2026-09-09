@@ -1,6 +1,7 @@
 from typing import Any
 
 from onair.commands.base import Command
+from onair.commands.play import now_playing
 from onair.utils.colorize import Colors, colorize
 
 
@@ -17,5 +18,5 @@ class Resume(Command):
                 return app.INDENT + colorize(Colors.RED, 'Track is already playing.')
             elif app.player.is_paused:
                 app.player.play()
-                return app.INDENT + colorize(Colors.BLUE, '\u25b6 ' + app.client.active_station['name'])
+                return now_playing(app)
         return app.INDENT + colorize(Colors.RED, 'No active players found.')
