@@ -1,14 +1,17 @@
 from typing import Any
 
+DEFAULT_VOLUME = 50
+
 
 class Player:
     _volume_state_for_mute = 0
 
-    def __init__(self, stream: str) -> None:
+    def __init__(self, stream: str, volume: int = DEFAULT_VOLUME) -> None:
         import vlc
 
         self._vlc = vlc
         self._player = vlc.MediaPlayer(stream)
+        self.set_volume(volume)
 
     def play(self) -> Any:
         return self._player.play()

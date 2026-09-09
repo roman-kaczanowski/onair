@@ -30,6 +30,44 @@ def test_search_genre() -> None:
     assert client.search_genre('ance') == {'id': 'dance', 'title': 'dance'}
 
 
+def test_home_genres_ascii_and_popular() -> None:
+    client = RadioBrowserClient(servers=[])
+    client.genres = [
+        {'id': 'rock', 'title': 'rock', 'stationcount': 10},
+        {'id': 'rap', 'title': 'rap', 'stationcount': 100},
+        {'id': 'reggae', 'title': 'reggae', 'stationcount': 50},
+        {'id': 'pop', 'title': 'pop', 'stationcount': 80},
+        {'id': '\u043f\u043e\u043f', 'title': '\u043f\u043e\u043f', 'stationcount': 999},
+        {'id': '@ambient', 'title': '@ambient', 'stationcount': 40},
+        {'id': '80s', 'title': '80s', 'stationcount': 60},
+    ]
+    home = client.home_genres_titles
+    assert set(home) <= {'#', '@', *'ABCDEFGHIJKLMNOPQRSTUVWXYZ'}
+    assert '\u041f' not in home
+    assert home['R'] == ['rap', 'reggae', 'rock']
+    assert home['@'] == ['@ambient']
+    assert home['#'] == ['80s']
+    assert '\u043f\u043e\u043f' in client.genres_titles.get('\u041f', [])
+
+
+def test_home_genres_limits_letter_groups() -> None:
+    import string
+
+    from onair.utils.listing import HOME_GROUP_LIMIT
+
+    client = RadioBrowserClient(servers=[])
+    client.genres = [
+        {'id': f'{letter}{index}', 'title': f'{letter.lower()}{index}', 'stationcount': ord(letter) * 10 + index}
+        for letter in string.ascii_uppercase
+        for index in range(3)
+    ]
+    home = client.home_genres_titles
+    assert len(home) == HOME_GROUP_LIMIT
+    assert set(home) <= set(string.ascii_uppercase)
+    assert 'Z' in home
+    assert 'A' not in home
+
+
 def test_get_genres_drops_rare_tags() -> None:
     client = RadioBrowserClient(servers=[])
 
@@ -118,3 +156,24 @@ def test_discover_servers_fallback(monkeypatch: Any) -> None:
 
     monkeypatch.setattr('onair.client.client.socket.getaddrinfo', fail)
     assert sorted(discover_servers()) == sorted(f'https://{host}' for host in FALLBACK_HOSTS)
+
+
+def test_search_country() -> None:
+    client = MockClient()
+    assert client.search_country('PL')['iso'] == 'PL'
+    assert client.search_country('poland')['iso'] == 'PL'
+    assert client.search_country('narnia') is None
+    assert client.countries_titles['P'] == ['Poland (PL)', 'Portugal (PT)']
+
+
+def test_countries_drops_rare() -> None:
+    client = RadioBrowserClient(servers=[])
+
+    def fake_get(path: str, params: dict[str, str] | None = None) -> list[dict[str, Any]]:
+        return [
+            {'name': 'Poland', 'iso_3166_1': 'PL', 'stationcount': 50},
+            {'name': 'Tiny', 'iso_3166_1': 'XX', 'stationcount': 1},
+        ]
+
+    client._get = fake_get  # type: ignore[method-assign]
+    assert [country['iso'] for country in client.countries] == ['PL']

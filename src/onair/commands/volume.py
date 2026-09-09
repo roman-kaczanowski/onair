@@ -38,6 +38,7 @@ class Volume(Command):
             if value is None:
                 return app.INDENT + colorize(Colors.RED, 'Volume value ') + arg + colorize(Colors.RED, " isn't valid.")
             app.player.set_volume(value)
+            app.volume = value
             return app.INDENT + colorize(Colors.GREEN, 'Set volume to ') + str(value)
         return app.INDENT + colorize(Colors.RED, 'No active players found.')
 

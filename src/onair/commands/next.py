@@ -12,12 +12,12 @@ class Next(Command):
         'next',
         'skip',
     )
-    description = 'Play the next station in this genre.'
+    description = 'Play the next station.'
 
     @staticmethod
     def handle(app: Any, *args: str) -> str:
-        if not app.client or not app.client.current_tag:
-            return app.INDENT + colorize(Colors.RED, 'No active station. Use play {genre} first.')
+        if not app.client or not app.client.has_pool:
+            return app.INDENT + colorize(Colors.RED, 'No active station. Use play {genre} or country {name} first.')
 
         for _ in range(3):
             stream = app.client.next_station()
@@ -25,7 +25,7 @@ class Next(Command):
                 break
             if start_stream(app, stream):
                 return now_playing(app)
-        return app.INDENT + colorize(Colors.RED, 'No other stations found... Please, try another genre.')
+        return app.INDENT + colorize(Colors.RED, 'No other stations found.')
 
 
 class Skip(Next):
