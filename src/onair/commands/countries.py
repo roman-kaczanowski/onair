@@ -8,12 +8,12 @@ from onair.utils.listing import filter_grouped_titles, format_grouped_titles
 
 class Countries(Command):
     name = 'countries'
-    pattern = 'countries {filter}'
+    pattern = 'countries [filter]'
     example = (
         'countries',
         'countries pol',
     )
-    description = 'Lists countries, optionally filtered by name or code.'
+    description = 'List countries, optionally filtered by name or code.'
 
     @staticmethod
     def handle(app: Any, *args: str) -> str:
@@ -29,13 +29,13 @@ class Countries(Command):
         footer = render(
             '\n\n'
             + app.INDENT
-            + '{{y}}Start listening by typing{{e}} country {name} {{y}}command: {{e}}country poland\n'
+            + '{{y}}Start listening with{{e}} country {name}{{y}}. For example:{{e}} country poland\n'
         )
         if not titles:
             if needle:
                 return header + colorize(Colors.RED, 'No countries matching ') + needle + '.\n'
             return header + colorize(
-                Colors.RED, "Countries list is empty. Seems API isn't available. Please, try again later.\n"
+                Colors.RED, 'The country list is empty. The Radio Browser API may be unavailable. Try again later.\n'
             )
         return header + format_grouped_titles(titles, app.INDENT) + footer
 
@@ -53,7 +53,7 @@ class Country(Command):
     def handle(app: Any, *args: str) -> str:
         arg = ' '.join(args)
         if not arg:
-            return app.INDENT + colorize(Colors.RED, 'Pick a country. Example: ') + 'country poland'
+            return app.INDENT + colorize(Colors.RED, 'Specify a country. Example: ') + 'country poland'
 
         country = app.client.search_country(arg) if app.client else None
         code = country.get('iso') if country else None

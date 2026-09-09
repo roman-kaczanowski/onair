@@ -11,14 +11,14 @@ class Mute(Command):
         'mute',
         'm',
     )
-    description = 'Mute current track.'
+    description = 'Mute playback.'
 
     @staticmethod
     def handle(app: Any, *args: str) -> str:
         if app.player:
             app.player.mute()
-            return app.INDENT + colorize(Colors.GREEN, 'Track muted.')
-        return app.INDENT + colorize(Colors.RED, 'No active players found.')
+            return app.INDENT + colorize(Colors.GREEN, 'Muted.')
+        return app.INDENT + colorize(Colors.RED, 'Nothing is playing.')
 
 
 class M(Mute):

@@ -1,5 +1,5 @@
 import sys
-from typing import Any
+from typing import Any, Never
 
 from onair.commands.base import Command
 
@@ -13,10 +13,10 @@ class Quit(Command):
         'q',
         'e',
     )
-    description = 'Quit and turn off music.'
+    description = 'Quit and stop playback.'
 
     @staticmethod
-    def handle(app: Any, *args: str) -> str:
+    def handle(app: Any, *args: str) -> Never:
         if app.player:
             app.player.stop()
         sys.exit()

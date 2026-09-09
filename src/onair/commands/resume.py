@@ -15,8 +15,8 @@ class Resume(Command):
     def handle(app: Any, *args: str) -> str:
         if app.player:
             if app.player.is_playing:
-                return app.INDENT + colorize(Colors.RED, 'Track is already playing.')
+                return app.INDENT + colorize(Colors.RED, 'Playback is already running.')
             elif app.player.is_paused:
                 app.player.play()
                 return now_playing(app)
-        return app.INDENT + colorize(Colors.RED, 'No active players found.')
+        return app.INDENT + colorize(Colors.RED, 'Nothing is playing.')

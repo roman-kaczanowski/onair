@@ -16,4 +16,4 @@ class Stop(Command):
             app.player.stop()
             app.player = None
             return app.INDENT + colorize(Colors.GREEN, 'Stopped.')
-        return app.INDENT + colorize(Colors.RED, 'No active players found.')
+        return app.INDENT + colorize(Colors.RED, 'Nothing is playing.')

@@ -19,7 +19,6 @@ class MockClient(RadioBrowserClient):
         self,
         *,
         tag: str | None = None,
-        language: str | None = None,
         countrycode: str | None = None,
     ) -> list[Station]:
         return [

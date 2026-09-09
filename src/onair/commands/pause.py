@@ -15,7 +15,7 @@ class Pause(Command):
         if app.player:
             if app.player.is_playing:
                 app.player.pause()
-                return app.INDENT + colorize(Colors.GREEN, 'Track paused.')
+                return app.INDENT + colorize(Colors.GREEN, 'Playback paused.')
             elif app.player.is_paused:
-                return app.INDENT + colorize(Colors.RED, 'Track already paused.')
-        return app.INDENT + colorize(Colors.RED, 'No active players found.')
+                return app.INDENT + colorize(Colors.RED, 'Playback is already paused.')
+        return app.INDENT + colorize(Colors.RED, 'Nothing is playing.')

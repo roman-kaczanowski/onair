@@ -62,9 +62,9 @@ class App:
     | (_) | | | | {{r}}(_| | | |{{e}}
      \\___/|_| |_|{{r}}\\__,_|_|_|{{e}}
     ---------------------------------------------------------------
-    {{y}}Welcome to onair. Use{{e}} play {{y}}to begin listening.
-    For example:{{e}} play chillout{{y}}, {{e}}play dubstep {{y}}etc...
-    {{g}}Use{{e}} help {{g}}to see all commands.{{e}}
+    {{y}}Welcome to onair. Play a genre to start listening.
+    Try:{{e}} play chillout {{y}}or{{e}} play dubstep{{y}}.
+    {{g}}Run{{e}} help {{g}}to list all commands.{{e}}
 """).strip('\n')
 
     def __init__(
@@ -94,7 +94,7 @@ class App:
         name, *args = line.split()
         command: type[Command] | None = self._commands_by_name.get(name)
         if command is None:
-            self.stdout_print(self.INDENT + colorize(Colors.RED, 'Unknown command ') + line)
+            self.stdout_print(self.INDENT + colorize(Colors.RED, 'Unknown command: ') + line)
             return False
         self.stdout_print(command.handle(self, *args))
         return False
@@ -108,13 +108,13 @@ class App:
         while True:
             try:
                 line = session.prompt(ANSI(self.prompt))
+                self.onecmd(line)
             except KeyboardInterrupt:
                 continue
             except EOFError:
                 if self.player:
                     self.player.stop()
                 break
-            self.onecmd(line)
 
 
 def main() -> None:

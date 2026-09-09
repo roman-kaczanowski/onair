@@ -123,11 +123,10 @@ def test_search_stations_maps_rows() -> None:
     )
 
 
-def test_languages_and_countries() -> None:
+def test_get_countries() -> None:
     client = RadioBrowserClient(servers=[])
-    payload = [{'name': 'english', 'iso_639': 'en', 'stationcount': 3}]
+    payload = [{'name': 'Poland', 'iso_3166_1': 'PL', 'stationcount': 50}]
     client._get = MagicMock(return_value=payload)
-    assert client.get_languages() == payload
     assert client.get_countries() == payload
 
 
@@ -148,6 +147,17 @@ def test_play_history_next_and_previous() -> None:
     assert client.active_station.uuid == second.uuid
     assert client.previous_station() == first.url
     assert client.previous_station() == ''
+
+
+def test_next_station_reuses_single_station_pool() -> None:
+    client = RadioBrowserClient(servers=[])
+    station = Station(uuid='only', name='Only FM', url='http://example.test/only')
+    client.current_tag = 'rare'
+    client.current_stations = [station]
+    client.active_station = station
+
+    assert client.next_station() == station.url
+    assert client.active_station == station
 
 
 def test_discover_servers_fallback(monkeypatch: Any) -> None:
