@@ -11,14 +11,14 @@ class Unmute(Command):
         'unmute',
         'um',
     )
-    description = 'Unmute current track.'
+    description = 'Unmute playback.'
 
     @staticmethod
     def handle(app: Any, *args: str) -> str:
         if app.player:
             app.player.unmute()
-            return app.INDENT + colorize(Colors.GREEN, 'Track unmuted.')
-        return app.INDENT + colorize(Colors.RED, 'No active players found.')
+            return app.INDENT + colorize(Colors.GREEN, 'Unmuted.')
+        return app.INDENT + colorize(Colors.RED, 'Nothing is playing.')
 
 
 class Um(Unmute):

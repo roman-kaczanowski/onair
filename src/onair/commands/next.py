@@ -17,7 +17,7 @@ class Next(Command):
     @staticmethod
     def handle(app: Any, *args: str) -> str:
         if not app.client or not app.client.has_pool:
-            return app.INDENT + colorize(Colors.RED, 'No active station. Use play {genre} or country {name} first.')
+            return app.INDENT + colorize(Colors.RED, 'No station tuned yet. Start with play {genre} or country {name}.')
 
         for _ in range(3):
             stream = app.client.next_station()

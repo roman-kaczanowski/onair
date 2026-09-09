@@ -113,13 +113,6 @@ class RadioBrowserClient:
                 genres.append({'id': name, 'title': name, 'stationcount': count})
         return genres
 
-    def get_languages(self) -> list[dict[str, Any]]:
-        data = self._get(
-            '/json/languages',
-            {'hidebroken': 'true', 'order': 'stationcount', 'reverse': 'true'},
-        )
-        return data if isinstance(data, list) else []
-
     def get_countries(self) -> list[dict[str, Any]]:
         data = self._get(
             '/json/countries',
@@ -195,7 +188,6 @@ class RadioBrowserClient:
         self,
         *,
         tag: str | None = None,
-        language: str | None = None,
         countrycode: str | None = None,
     ) -> list[Station]:
         params: dict[str, str] = {
@@ -207,8 +199,6 @@ class RadioBrowserClient:
         if tag:
             params['tag'] = tag
             params['tagExact'] = 'true'
-        if language:
-            params['language'] = language
         if countrycode:
             params['countrycode'] = countrycode
         data = self._get('/json/stations/search', params)
@@ -256,7 +246,7 @@ class RadioBrowserClient:
         for _ in range(count):
             station = self.current_stations[self._cursor % count]
             self._cursor += 1
-            if skip and station.uuid == skip:
+            if count > 1 and skip and station.uuid == skip:
                 continue
             if self._activate(station):
                 return self.active_station

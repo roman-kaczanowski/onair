@@ -32,6 +32,6 @@ class Command:
             return ''
         example_label = ' Example: ' if len(cls.example) == 1 else ' Examples: '
         return (
-            f'    {cls.pattern:<15} - {colorize(Colors.GREEN, cls.description)}'
+            f'    {cls.pattern:<20} - {colorize(Colors.GREEN, cls.description)}'
             f'{colorize(Colors.GRAY, example_label)}{colorize(Colors.GRAY, " | ").join(cls.example)}\n'
         )

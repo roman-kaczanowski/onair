@@ -12,18 +12,18 @@ class Info(Command):
         'i',
         'information',
     )
-    description = 'Shows more information about the current station.'
+    description = 'Show details for the current station.'
 
     @staticmethod
     def handle(app: Any, *args: str) -> str:
         station = app.client.active_station if app.client else None
         if not station:
-            return app.INDENT + colorize(Colors.RED, 'No active station.')
+            return app.INDENT + colorize(Colors.RED, 'No station is tuned.')
 
         location = ', '.join(part for part in (station.state, station.country or station.countrycode) if part)
         codec = station.codec
         if station.bitrate:
-            codec = f'{codec} {station.bitrate}kbps'.strip() if codec else f'{station.bitrate}kbps'
+            codec = f'{codec} {station.bitrate} kbps'.strip() if codec else f'{station.bitrate} kbps'
 
         lines = [app.INDENT + colorize(Colors.BLUE, station.name)]
         fields = (

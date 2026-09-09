@@ -1,7 +1,7 @@
 [project]
 name = "onair"
 version = "0.1.0"
-description = "Interactive REPL shell radio"
+description = "Interactive internet radio for the terminal"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

@@ -6,13 +6,13 @@ from onair.utils.colorize import render
 
 class Help(Command):
     name = 'help'
-    pattern = 'help {cmd}'
+    pattern = 'help [command]'
     example = (
         'help',
         'help play',
         'help i',
     )
-    description = 'Lists all available commands or shows detailed info about selected command.'
+    description = 'List commands or show help for one command.'
 
     @staticmethod
     def handle(app: Any, *args: str) -> str:
@@ -24,9 +24,9 @@ class Help(Command):
                     return command.help()
             return render(
                 app.INDENT
-                + '{{r}}Command{{e-y}} '
+                + '{{r}}Command "{{e-y}}'
                 + arg
-                + ' {{e-r}}not found. You can use{{e}} help {{r}}command to see all available commands.{{e}}'
+                + '{{e-r}}" not found. Run{{e}} help {{r}}to list available commands.{{e}}'
             )
 
         main_help = ''
