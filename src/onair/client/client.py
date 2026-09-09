@@ -1,11 +1,12 @@
 import socket
-import string
 from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
 from random import shuffle
 from typing import Any
 
 import requests
+
+from onair.utils.listing import HOME_GROUP_KEYS, HOME_GROUP_LIMIT, group_by_letter, letter_key
 
 try:
     USER_AGENT = f'onair/{version("onair")}'
@@ -14,6 +15,7 @@ except PackageNotFoundError:
 
 DNS_NAME = 'all.api.radio-browser.info'
 MIN_TAG_STATIONS = 30
+MIN_COUNTRY_STATIONS = 10
 REQUEST_TIMEOUT = 10
 STATION_LIMIT = '100'
 # ponytail: hardcoded hosts if DNS is filtered; drop once discovery is enough.
@@ -68,8 +70,10 @@ def _int(value: Any, default: int = 0) -> int:
 class RadioBrowserClient:
     def __init__(self, servers: list[str] | None = None) -> None:
         self._servers = list(servers) if servers is not None else discover_servers()
-        self.genres: list[dict[str, str]] = self.get_genres()
+        self.genres: list[dict[str, Any]] = self.get_genres()
+        self._countries: list[dict[str, Any]] | None = None
         self.current_tag: str | None = None
+        self.current_countrycode: str | None = None
         self.current_stations: list[Station] = []
         self.active_station: Station | None = None
         self.history: list[Station] = []
@@ -94,18 +98,19 @@ class RadioBrowserClient:
                 continue
         return None
 
-    def get_genres(self) -> list[dict[str, str]]:
+    def get_genres(self) -> list[dict[str, Any]]:
         data = self._get(
             '/json/tags',
             {'hidebroken': 'true', 'order': 'stationcount', 'reverse': 'true'},
         )
         if not isinstance(data, list):
             return []
-        genres: list[dict[str, str]] = []
+        genres: list[dict[str, Any]] = []
         for tag in data:
             name = str(tag.get('name') or '').strip()
-            if name and _int(tag.get('stationcount')) >= MIN_TAG_STATIONS:
-                genres.append({'id': name, 'title': name})
+            count = _int(tag.get('stationcount'))
+            if name and count >= MIN_TAG_STATIONS:
+                genres.append({'id': name, 'title': name, 'stationcount': count})
         return genres
 
     def get_languages(self) -> list[dict[str, Any]]:
@@ -124,20 +129,67 @@ class RadioBrowserClient:
 
     @property
     def genres_titles(self) -> dict[str, list[str]]:
-        titles: dict[str, list[str]] = {}
-        for title in sorted(g.get('title', '') for g in self.genres):
+        return group_by_letter(g.get('title', '') for g in self.genres)
+
+    @property
+    def home_genres_titles(self) -> dict[str, list[str]]:
+        grouped: dict[str, list[tuple[int, str]]] = {}
+        for genre in self.genres:
+            title = str(genre.get('title') or '')
             if not title:
                 continue
-            first_letter = '#' if title[0] in string.digits else title[0].upper()
-            titles[first_letter] = titles.get(first_letter, list()) + [title]
-        return titles
+            key = letter_key(title)
+            if key not in HOME_GROUP_KEYS:
+                continue
+            grouped.setdefault(key, []).append((_int(genre.get('stationcount')), title))
+        ranked = sorted(grouped.items(), key=lambda item: (-sum(count for count, _title in item[1]), item[0]))
+        chosen = dict(ranked[:HOME_GROUP_LIMIT])
+        return {
+            key: [title for _count, title in sorted(items, key=lambda item: (-item[0], item[1]))]
+            for key, items in sorted(chosen.items())
+        }
 
-    def search_genre(self, genre_name: str) -> dict[str, str] | None:
+    @property
+    def countries(self) -> list[dict[str, Any]]:
+        if self._countries is None:
+            self._countries = []
+            for row in self.get_countries():
+                name = str(row.get('name') or '').strip()
+                iso = str(row.get('iso_3166_1') or '').strip().upper()
+                if name and _int(row.get('stationcount')) >= MIN_COUNTRY_STATIONS:
+                    self._countries.append({'name': name, 'iso': iso, 'stationcount': _int(row.get('stationcount'))})
+        return self._countries
+
+    @property
+    def countries_titles(self) -> dict[str, list[str]]:
+        labels = [
+            f'{country["name"]} ({country["iso"]})' if country.get('iso') else country['name']
+            for country in self.countries
+        ]
+        return group_by_letter(labels)
+
+    def search_genre(self, genre_name: str) -> dict[str, Any] | None:
         needle = genre_name.lower()
         for genre in sorted(self.genres, key=lambda item: (len(item.get('title', '')), item.get('title', ''))):
             if needle in genre.get('title', '').lower():
                 return genre
         return None
+
+    def search_country(self, country_name: str) -> dict[str, Any] | None:
+        needle = country_name.lower().strip()
+        if not needle:
+            return None
+        for country in self.countries:
+            if country.get('iso', '').lower() == needle:
+                return country
+        for country in sorted(self.countries, key=lambda item: (len(item.get('name', '')), item.get('name', ''))):
+            if needle in country.get('name', '').lower() or needle in country.get('iso', '').lower():
+                return country
+        return None
+
+    @property
+    def has_pool(self) -> bool:
+        return bool(self.current_tag or self.current_countrycode)
 
     def search_stations(
         self,
@@ -170,9 +222,11 @@ class RadioBrowserClient:
         return stations
 
     def get_stations(self) -> list[Station]:
-        if not self.current_tag:
-            return []
-        return self.search_stations(tag=self.current_tag)
+        if self.current_tag:
+            return self.search_stations(tag=self.current_tag)
+        if self.current_countrycode:
+            return self.search_stations(countrycode=self.current_countrycode)
+        return []
 
     def resolve_url(self, station: Station) -> str:
         data = self._get(f'/json/url/{station.uuid}')
@@ -180,9 +234,17 @@ class RadioBrowserClient:
             station.url = str(data['url'])
         return station.url
 
-    def update_active_station(self, tag: str) -> Station | None:
-        if self.current_tag != tag:
+    def update_active_station(self, tag: str | None = None, countrycode: str | None = None) -> Station | None:
+        if tag is not None:
+            countrycode = None
+        elif countrycode is not None:
+            tag = None
+        else:
+            tag = self.current_tag
+            countrycode = self.current_countrycode
+        if self.current_tag != tag or self.current_countrycode != countrycode:
             self.current_tag = tag
+            self.current_countrycode = countrycode
             self.current_stations = self.get_stations()
             shuffle(self.current_stations)
             self._cursor = 0
@@ -204,18 +266,24 @@ class RadioBrowserClient:
     def stream_url(self) -> str:
         return self.active_station.url if self.active_station else ''
 
-    def get_stream(self, tag: str, renew_active_station: bool = False) -> str:
-        if not self.active_station or self.current_tag != tag or renew_active_station:
-            return self.stream_url if self.update_active_station(tag) else ''
+    def get_stream(
+        self,
+        tag: str | None = None,
+        renew_active_station: bool = False,
+        countrycode: str | None = None,
+    ) -> str:
+        same_pool = self.current_tag == tag and self.current_countrycode == countrycode
+        if not self.active_station or not same_pool or renew_active_station:
+            return self.stream_url if self.update_active_station(tag=tag, countrycode=countrycode) else ''
         return self.stream_url
 
     def next_station(self) -> str:
         if 0 <= self._history_index < len(self.history) - 1:
             self._history_index += 1
             return self._activate(self.history[self._history_index], record_history=False)
-        if not self.current_tag:
+        if not self.has_pool:
             return ''
-        return self.get_stream(self.current_tag, renew_active_station=True)
+        return self.get_stream(self.current_tag, renew_active_station=True, countrycode=self.current_countrycode)
 
     def previous_station(self) -> str:
         if self._history_index <= 0:

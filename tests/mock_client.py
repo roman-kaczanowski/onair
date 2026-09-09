@@ -1,3 +1,5 @@
+from typing import Any
+
 from onair.client.client import RadioBrowserClient, Station
 
 
@@ -5,7 +7,7 @@ class MockClient(RadioBrowserClient):
     def __init__(self) -> None:
         super().__init__(servers=[])
 
-    def get_genres(self) -> list[dict[str, str]]:
+    def get_genres(self) -> list[dict[str, Any]]:
         return [
             {'id': 'trance', 'title': 'trance'},
             {'id': 'rock', 'title': 'rock'},
@@ -27,3 +29,10 @@ class MockClient(RadioBrowserClient):
 
     def resolve_url(self, station: Station) -> str:
         return station.url
+
+    def get_countries(self) -> list[dict[str, Any]]:
+        return [
+            {'name': 'Poland', 'iso_3166_1': 'PL', 'stationcount': 50},
+            {'name': 'Germany', 'iso_3166_1': 'DE', 'stationcount': 80},
+            {'name': 'Portugal', 'iso_3166_1': 'PT', 'stationcount': 20},
+        ]

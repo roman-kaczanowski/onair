@@ -1,4 +1,5 @@
 from . import (
+    countries,
     genres,
     help,
     info,
@@ -17,6 +18,9 @@ from . import (
 commands = [
     help.Help,
     genres.Genres,
+    countries.Countries,
+    countries.Country,
+    countries.C,
     play.Play,
     play.P,
     pause.Pause,
@@ -39,4 +43,6 @@ commands = [
     unmute.Um,
     quit.Quit,
     quit.Q,
+    quit.Exit,
+    quit.E,
 ]

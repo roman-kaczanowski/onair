@@ -14,6 +14,8 @@ Tab completion, command history, and `volume +10` / `volume -10` are available i
 ```text
 onair> play chillout
 onair> genres
+onair> countries
+onair> country poland
 onair> info
 onair> volume +10
 onair> next

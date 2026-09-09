@@ -14,6 +14,7 @@ from prompt_toolkit.history import FileHistory
 from onair.client.client import RadioBrowserClient
 from onair.commands import commands
 from onair.commands.base import Command
+from onair.player.player import DEFAULT_VOLUME
 from onair.utils.colorize import Colors, colorize, render
 
 HISTORY_PATH = Path.home() / '.onair_history'
@@ -21,21 +22,28 @@ HISTORY_PATH = Path.home() / '.onair_history'
 
 class OnairCompleter(Completer):
     def __init__(self, app: 'App') -> None:
-        self._names = [command.name for command in app.commands]
-        self._genres = [genre.get('title', '') for genre in (app.client.genres if app.client else [])]
+        self._app = app
 
     def get_completions(self, document: Document, complete_event: Any) -> Iterator[Completion]:
+        names = [command.name for command in self._app.commands]
         stripped = document.text_before_cursor.lstrip()
         if not stripped or (' ' not in stripped and not document.text_before_cursor.endswith(' ')):
-            for name in self._names:
+            for name in names:
                 if name.startswith(stripped):
                     yield Completion(name, start_position=-len(stripped))
             return
         command, _, rest = stripped.partition(' ')
-        if command in {'play', 'p'}:
-            options = self._genres
+        if command in {'play', 'p', 'genres'}:
+            options = [genre.get('title', '') for genre in (self._app.client.genres if self._app.client else [])]
+        elif command in {'country', 'c', 'countries'}:
+            options = []
+            for country in self._app.client.countries if self._app.client else []:
+                options.append(country.get('name', ''))
+                iso = country.get('iso', '')
+                if iso:
+                    options.append(iso)
         elif command == 'help':
-            options = self._names
+            options = names
         else:
             return
         needle = rest.lower()
@@ -49,15 +57,15 @@ class App:
 
     prompt = colorize(Colors.LIME, 'onair> ')
     intro = render("""
-      ___  _ __   __ _(_)_ __
-     / _ \\| '_ \\ / _` | | '__|
-    | (_) | | | | (_| | | |
-     \\___/|_| |_|\\__,_|_|_|
+      ___  _ __   {{r}}__ _(_)_ __{{e}}
+     / _ \\| '_ \\ {{r}}/ _` | | '__|{{e}}
+    | (_) | | | | {{r}}(_| | | |{{e}}
+     \\___/|_| |_|{{r}}\\__,_|_|_|{{e}}
     ---------------------------------------------------------------
     {{y}}Welcome to onair. Use{{e}} play {{y}}to begin listening.
     For example:{{e}} play chillout{{y}}, {{e}}play dubstep {{y}}etc...
     {{g}}Use{{e}} help {{g}}to see all commands.{{e}}
-    """)
+""").strip('\n')
 
     def __init__(
         self,
@@ -68,6 +76,7 @@ class App:
     ) -> None:
         self.client = client
         self.player = None
+        self.volume = DEFAULT_VOLUME
         self.commands = commands
         self._commands_by_name = {command.name: command for command in commands}
         self.stdout = stdout or sys.stdout
