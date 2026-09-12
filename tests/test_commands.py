@@ -58,7 +58,7 @@ def test_genres_filter() -> None:
     assert 'No genres matching hip' in _cli_response(mock_stdout)
 
 
-def test_genres_withintro_previews_each_group() -> None:
+def test_startup_sections() -> None:
     from onair.utils.listing import PREVIEW_LIMIT, format_grouped_titles
 
     names = [f'rock{i}' for i in range(8)]
@@ -70,12 +70,24 @@ def test_genres_withintro_previews_each_group() -> None:
     assert 'rock5' in full
 
     cli, mock_stdout = _create()
-    assert not cli.onecmd('genres withintro')
+    cli.show_startup(preview_genres=True)
     text = _cli_output(mock_stdout)
+    assert '___' in text
+    assert 'Welcome to onair' in text
     assert 'R - rock' in text
     assert 'D - dance' in text
     assert 'Run genres to see more' in text
     assert '\033[91m' in ''.join(call[0][0] for call in mock_stdout.write.call_args_list)
+    assert text.endswith('\n\n')
+
+    mock_stdout.reset_mock()
+    cli.show_startup(preview_genres=False)
+    text = _cli_output(mock_stdout)
+    assert '___' in text
+    assert 'Welcome to onair' in text
+    assert '- GENRES -' not in text
+    assert 'R - rock' not in text
+    assert text.endswith('\n\n')
 
 
 def test_home_screen_fits_default_terminal() -> None:
@@ -92,7 +104,7 @@ def test_home_screen_fits_default_terminal() -> None:
     ]
     mock_stdout = mock.create_autospec(sys.stdout)
     cli = App(stdin=mock.create_autospec(sys.stdin), stdout=mock_stdout, client=client, test=True)
-    cli.onecmd('genres withintro')
+    cli.show_startup(preview_genres=True)
     assert len(_cli_output(mock_stdout).splitlines()) < DEFAULT_TERMINAL_ROWS
 
 
@@ -396,3 +408,22 @@ def test_run_line_reports_success_and_failure() -> None:
     cli, _mock_stdout = _create()
     assert not cli.run_line('play nosuchgenre')
     assert cli.run_line('help')
+
+
+def test_parse_args_preserves_flag_order() -> None:
+    from onair.app import parse_args
+
+    args = parse_args(['--volume', '30', '--play', 'jazz', '--country', 'poland'])
+    assert args.startup == ['volume 30', 'play jazz', 'country poland']
+    args = parse_args(['-p', 'jazz', '-c', 'poland', '-v', '30'])
+    assert args.startup == ['p jazz', 'c poland', 'v 30']
+
+
+def test_parse_args_version(capsys: pytest.CaptureFixture[str]) -> None:
+    from onair import __version__
+    from onair.app import parse_args
+
+    with pytest.raises(SystemExit) as exc:
+        parse_args(['--version'])
+    assert exc.value.code == 0
+    assert f'onair {__version__}' in capsys.readouterr().out

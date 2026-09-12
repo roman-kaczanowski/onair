@@ -1,6 +1,7 @@
+import argparse
 import os
 import sys
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -11,13 +12,39 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.formatted_text import ANSI
 from prompt_toolkit.history import FileHistory
 
+from onair import __version__
 from onair.client.client import RadioBrowserClient
 from onair.commands import commands
 from onair.commands.base import Command, CommandError
+from onair.commands.genres import home_preview
 from onair.player.player import DEFAULT_VOLUME
 from onair.utils.colorize import Colors, colorize, render
 
 HISTORY_PATH = Path.home() / '.onair_history'
+
+
+class StoreOrdered(argparse.Action):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
+    ) -> None:
+        items = list(getattr(namespace, self.dest) or [])
+        command = (option_string or self.dest).lstrip('-')
+        items.append(f'{command} {values}')
+        setattr(namespace, self.dest, items)
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(prog='onair', description='Interactive internet radio for the terminal.')
+    parser.add_argument('-V', '--version', action='version', version=f'onair {__version__}')
+    parser.set_defaults(startup=[])
+    parser.add_argument('-p', '--play', dest='startup', metavar='GENRE', action=StoreOrdered)
+    parser.add_argument('-c', '--country', dest='startup', metavar='NAME', action=StoreOrdered)
+    parser.add_argument('-v', '--volume', dest='startup', metavar='LEVEL', action=StoreOrdered)
+    return parser.parse_args(argv)
 
 
 class OnairCompleter(Completer):
@@ -57,11 +84,13 @@ class App:
     INDENT = ' ' * 4
 
     prompt = colorize(Colors.LIME, 'onair> ')
-    intro = render("""
+    banner = render("""
       ___  _ __   {{r}}__ _(_)_ __{{e}}
      / _ \\| '_ \\ {{r}}/ _` | | '__|{{e}}
     | (_) | | | | {{r}}(_| | | |{{e}}
      \\___/|_| |_|{{r}}\\__,_|_|_|{{e}}
+""").strip('\n')
+    welcome = render("""
     ---------------------------------------------------------------
     {{y}}Welcome to onair. Play a genre to start listening.
     Try:{{e}} play chillout {{y}}or{{e}} play dubstep{{y}}.
@@ -74,6 +103,7 @@ class App:
         test: bool = False,
         stdout: Any = None,
         stdin: Any = None,
+        preview_genres: bool = True,
     ) -> None:
         self.client = client
         self.player = None
@@ -83,10 +113,19 @@ class App:
         self.stdout = stdout or sys.stdout
         self.stdin = stdin
         if not test:
-            self.onecmd('genres withintro')
+            self.show_startup(preview_genres=preview_genres)
 
     def stdout_print(self, text: str, end: str = '\n') -> None:
         self.stdout.write(text + end)
+
+    def show_startup(self, *, preview_genres: bool = True) -> None:
+        self.stdout_print(self.banner)
+        self.stdout_print('')
+        self.stdout_print(self.welcome)
+        if preview_genres:
+            self.stdout_print('')
+            self.stdout_print(home_preview(self))
+        self.stdout_print('')
 
     def run_line(self, line: str) -> bool:
         line = line.strip()
@@ -137,4 +176,9 @@ class App:
 
 def main() -> None:
     os.environ['VLC_VERBOSE'] = '-1'
-    App(client=RadioBrowserClient()).cmdloop()
+    args = parse_args()
+    app = App(client=RadioBrowserClient(), preview_genres=not args.startup)
+    for line in args.startup:
+        if not app.run_line(line):
+            break
+    app.cmdloop()
