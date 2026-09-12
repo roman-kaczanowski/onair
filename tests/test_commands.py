@@ -94,7 +94,7 @@ def test_home_screen_fits_default_terminal() -> None:
     import string
 
     from onair.client.client import RadioBrowserClient
-    from onair.utils.listing import DEFAULT_TERMINAL_ROWS
+    from onair.utils.listing import DEFAULT_TERMINAL_ROWS, PROMPT_MENU_RESERVE
 
     client = RadioBrowserClient(servers=[])
     client.genres = [
@@ -105,7 +105,8 @@ def test_home_screen_fits_default_terminal() -> None:
     mock_stdout = mock.create_autospec(sys.stdout)
     cli = App(stdin=mock.create_autospec(sys.stdin), stdout=mock_stdout, client=client, test=True)
     cli.show_startup(preview_genres=True)
-    assert len(_cli_output(mock_stdout).splitlines()) < DEFAULT_TERMINAL_ROWS
+    # prompt line + prompt_toolkit's default completion-menu reserve
+    assert len(_cli_output(mock_stdout).splitlines()) + 1 + PROMPT_MENU_RESERVE <= DEFAULT_TERMINAL_ROWS
 
 
 def test_quit() -> None:

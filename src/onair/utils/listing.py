@@ -4,8 +4,10 @@ from collections.abc import Iterable
 from onair.utils.colorize import Colors, colorize
 
 PREVIEW_LIMIT = 5
-HOME_GROUP_LIMIT = 8
+HOME_GROUP_LIMIT = 4
 DEFAULT_TERMINAL_ROWS = 24
+# prompt_toolkit PromptSession default; home screen must leave this room for the REPL.
+PROMPT_MENU_RESERVE = 8
 HOME_GROUP_KEYS = frozenset({'#', '@'} | set(string.ascii_uppercase))
 
 

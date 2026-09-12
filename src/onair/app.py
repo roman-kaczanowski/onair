@@ -150,12 +150,9 @@ class App:
         self.stdout.write(text + end)
 
     def show_startup(self, *, preview_genres: bool = True) -> None:
-        self.stdout_print('')
         self.stdout_print(self.banner)
-        self.stdout_print('')
         self.stdout_print(self.welcome)
         if preview_genres:
-            self.stdout_print('')
             self.stdout_print(home_preview(self))
         self.stdout_print('')
 
