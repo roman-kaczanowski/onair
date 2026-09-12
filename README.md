@@ -54,7 +54,32 @@ onair -l polish
 onair --version
 ```
 
-Short flags are `-p` / `--play`, `-c` / `--country`, `-l` / `--language`, and `-v` / `--volume`. They run left to right and map to the same commands as the REPL. A failed flag stops the rest of the startup sequence, then the prompt still opens. With flags, startup skips the genre preview and shows the banner, welcome text, then the command output.
+Startup flags select a station and set its initial volume before opening the interactive shell. When only a volume flag is given, onair chooses a random genre.
+
+## Common tasks
+
+Start quietly and keep the interactive shell open:
+
+```shell
+onair --play jazz --volume 20
+```
+
+Browse before choosing a station:
+
+```text
+onair> genres chill
+onair> countries pol
+onair> languages en
+onair> play chillout
+```
+
+Move between stations and inspect the current one:
+
+```text
+onair> next
+onair> previous
+onair> info
+```
 
 ## Commands
 
@@ -65,38 +90,29 @@ Discover:
 - `genres [filter]` lists genres.
 - `countries [filter]` lists countries.
 - `languages [filter]` lists languages.
-- `play [genre]` plays a genre. With no genre, it resumes paused playback or picks a genre at random.
-- `country [name|ISO]` plays a station from a country.
-- `language [name]` plays a station in a language.
+- `play [genre]` (`p`) plays a genre. With no genre, it resumes paused playback or picks a genre at random.
+- `country [name|ISO]` (`c`) plays a station from a country.
+- `language [name]` (`lang`, `l`) plays a station in a language.
 
 Playback:
 
-- `next` / `previous` jump to the next or previous station.
+- `next` (`skip`) plays the next station.
+- `previous` (`prev`, `back`) plays the previous station.
 - `pause` / `resume` / `stop` control playback without leaving the shell.
-- `mute` / `unmute` silence or restore audio.
-- `volume [n|+n|-n]` sets volume, or changes it with `+n` / `-n`.
+- `mute` (`m`) and `unmute` (`um`) silence or restore audio.
+- `volume [n|+n|-n]` (`v`, `vol`) sets volume, or changes it with `+n` / `-n`.
 
 Session:
 
-- `info` shows the current station.
+- `info` (`i`, `information`) shows the current station.
 - `help [command]` lists commands or explains one command.
-- `quit` stops playback and exits.
+- `quit` (`q`, `exit`, `e`) stops playback and exits.
 
-```text
-onair> help
-onair> play chillout
-onair> info
-onair> next
-onair> previous
-onair> country poland
-onair> language polish
-onair> volume +10
-onair> mute
-onair> unmute
-onair> pause
-onair> resume
-onair> stop
-```
+## Troubleshooting
+
+- No audio: make sure the VLC application is installed, then restart the terminal.
+- A station does not play: try `next` or choose another genre, country, or language.
+- Lists are empty: Radio Browser may be unavailable or blocked by the network. Try again later.
 
 ## Acknowledgments
 

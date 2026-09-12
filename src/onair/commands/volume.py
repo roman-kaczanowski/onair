@@ -28,24 +28,24 @@ class Volume(Command):
 
     @staticmethod
     def handle(app: Any, *args: str) -> str:
+        arg = args[0] if args else ''
+        current = app.player.get_volume() if app.player else app.volume
+
+        if not arg:
+            return app.INDENT + colorize(Colors.GREEN, 'Current volume is ') + str(current)
+
+        value = parse_volume(current, arg)
+        if value is None:
+            raise CommandError(
+                app.INDENT
+                + colorize(Colors.RED, 'Invalid volume: ')
+                + arg
+                + colorize(Colors.RED, '. Use 0-100, or +n / -n.')
+            )
         if app.player:
-            arg = args[0] if args else ''
-
-            if not arg:
-                return app.INDENT + colorize(Colors.GREEN, 'Current volume is ') + str(app.player.get_volume())
-
-            value = parse_volume(app.player.get_volume(), arg)
-            if value is None:
-                raise CommandError(
-                    app.INDENT
-                    + colorize(Colors.RED, 'Invalid volume: ')
-                    + arg
-                    + colorize(Colors.RED, '. Use 0-100, or +n / -n.')
-                )
             app.player.set_volume(value)
-            app.volume = value
-            return app.INDENT + colorize(Colors.GREEN, 'Set volume to ') + str(value)
-        raise CommandError(app.INDENT + colorize(Colors.RED, 'Nothing is playing.'))
+        app.volume = value
+        return app.INDENT + colorize(Colors.GREEN, 'Set volume to ') + str(value)
 
 
 class V(Volume):

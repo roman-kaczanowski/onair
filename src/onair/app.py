@@ -61,7 +61,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action=StoreOrdered,
         help='Set volume',
     )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.startup:
+        volume = [line for line in args.startup if line.split(maxsplit=1)[0] in {'volume', 'v'}]
+        playback = [line for line in args.startup if line not in volume]
+        if not playback:
+            playback.append('play')
+        args.startup = volume + playback
+    return args
 
 
 class OnairCompleter(Completer):
