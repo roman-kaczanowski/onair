@@ -21,7 +21,7 @@ class Next(Command):
                 app.INDENT
                 + colorize(
                     Colors.RED,
-                    'No station tuned yet. Start with play [genre] or country [name].',
+                    'No station tuned yet. Start with play [genre], country [name], or language [name].',
                 )
             )
 

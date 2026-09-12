@@ -20,6 +20,7 @@ class MockClient(RadioBrowserClient):
         *,
         tag: str | None = None,
         countrycode: str | None = None,
+        language: str | None = None,
     ) -> list[Station]:
         return [
             Station(uuid='rock-1', name='Rock FM', url='http://example.test/rock-1', tags='rock'),
@@ -34,4 +35,11 @@ class MockClient(RadioBrowserClient):
             {'name': 'Poland', 'iso_3166_1': 'PL', 'stationcount': 50},
             {'name': 'Germany', 'iso_3166_1': 'DE', 'stationcount': 80},
             {'name': 'Portugal', 'iso_3166_1': 'PT', 'stationcount': 20},
+        ]
+
+    def get_languages(self) -> list[dict[str, Any]]:
+        return [
+            {'name': 'polish', 'iso_639': 'pl', 'stationcount': 40},
+            {'name': 'german', 'iso_639': 'de', 'stationcount': 70},
+            {'name': 'english', 'iso_639': 'en', 'stationcount': 90},
         ]

@@ -240,6 +240,47 @@ def test_country_play(mock_player_cls: mock.MagicMock) -> None:
     assert 'Now playing:' in _cli_output(mock_stdout)
 
 
+def test_languages() -> None:
+    cli, mock_stdout = _create()
+    assert not cli.onecmd('languages')
+    text = _cli_response(mock_stdout)
+    assert '- LANGUAGES -' in text
+    assert 'polish (pl)' in text
+    assert 'language [name]' in text
+
+
+def test_languages_filter() -> None:
+    cli, mock_stdout = _create()
+    assert not cli.onecmd('languages pol')
+    text = _cli_response(mock_stdout)
+    assert 'polish (pl)' in text
+    assert 'german' not in text
+    mock_stdout.reset_mock()
+    assert not cli.onecmd('languages klingon')
+    assert 'No languages matching klingon' in _cli_response(mock_stdout)
+
+
+def test_language_unknown() -> None:
+    cli, mock_stdout = _create()
+    assert not cli.onecmd('language klingon')
+    assert 'not found' in _cli_response(mock_stdout)
+
+
+@mock.patch('onair.commands.play.Player')
+def test_language_play(mock_player_cls: mock.MagicMock) -> None:
+    mock_player_cls.return_value.is_playing = True
+    cli, mock_stdout = _create()
+    assert not cli.onecmd('language pl')
+    assert cli.client.current_language == 'polish'
+    assert 'Language: polish' in _cli_output(mock_stdout)
+    assert 'Volume: 50' in _cli_output(mock_stdout)
+    mock_stdout.reset_mock()
+    assert not cli.onecmd('l english')
+    assert cli.client.current_language == 'english'
+    assert 'Language: english' in _cli_output(mock_stdout)
+    assert 'Now playing:' in _cli_output(mock_stdout)
+
+
 def test_stop_without_player() -> None:
     cli, mock_stdout = _create()
     assert not cli.onecmd('stop')
@@ -376,6 +417,9 @@ def test_complete_commands_and_genres() -> None:
     assert 'countries' in texts('co')
     assert 'dance' in texts('genres da')
     assert 'Poland' in texts('countries P')
+    assert 'polish' in texts('language p')
+    assert 'english' in texts('languages e')
+    assert 'languages' in texts('lan')
     assert 'volume' in texts('play rock | vo')
     assert 'rock' in texts('play jazz | play ro')
     assert 'Poland' in texts('play jazz | country P')
@@ -415,8 +459,10 @@ def test_parse_args_preserves_flag_order() -> None:
 
     args = parse_args(['--volume', '30', '--play', 'jazz', '--country', 'poland'])
     assert args.startup == ['volume 30', 'play jazz', 'country poland']
-    args = parse_args(['-p', 'jazz', '-c', 'poland', '-v', '30'])
-    assert args.startup == ['p jazz', 'c poland', 'v 30']
+    args = parse_args(['--language', 'polish', '--volume', '40'])
+    assert args.startup == ['language polish', 'volume 40']
+    args = parse_args(['-p', 'jazz', '-c', 'poland', '-l', 'polish', '-v', '30'])
+    assert args.startup == ['p jazz', 'c poland', 'l polish', 'v 30']
 
 
 def test_parse_args_version(capsys: pytest.CaptureFixture[str]) -> None:
