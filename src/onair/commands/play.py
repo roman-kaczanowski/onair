@@ -59,12 +59,12 @@ def starting_message(app: Any, kind: str, name: str) -> str:
     )
 
 
-def try_tune(app: Any, *, tag: str | None = None, countrycode: str | None = None) -> str:
-    missing = app.INDENT + colorize(Colors.RED, 'No working stations found. Try another genre or country.')
+def try_tune(app: Any, *, tag: str | None = None, countrycode: str | None = None, language: str | None = None) -> str:
+    missing = app.INDENT + colorize(Colors.RED, 'No working stations found. Try another genre, country, or language.')
     if not app.client:
         raise CommandError(missing)
     for _ in range(3):
-        stream = app.client.get_stream(tag, renew_active_station=True, countrycode=countrycode)
+        stream = app.client.get_stream(tag, renew_active_station=True, countrycode=countrycode, language=language)
         if not stream:
             raise CommandError(missing)
         if start_stream(app, stream):

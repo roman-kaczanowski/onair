@@ -187,3 +187,24 @@ def test_countries_drops_rare() -> None:
 
     client._get = fake_get  # type: ignore[method-assign]
     assert [country['iso'] for country in client.countries] == ['PL']
+
+
+def test_search_language() -> None:
+    client = MockClient()
+    assert client.search_language('pl')['name'] == 'polish'
+    assert client.search_language('english')['iso'] == 'en'
+    assert client.search_language('klingon') is None
+    assert client.languages_titles['P'] == ['polish (pl)']
+
+
+def test_languages_drops_rare() -> None:
+    client = RadioBrowserClient(servers=[])
+
+    def fake_get(path: str, params: dict[str, str] | None = None) -> list[dict[str, Any]]:
+        return [
+            {'name': 'english', 'iso_639': 'en', 'stationcount': 50},
+            {'name': 'tiny', 'iso_639': 'xx', 'stationcount': 1},
+        ]
+
+    client._get = fake_get  # type: ignore[method-assign]
+    assert [language['iso'] for language in client.languages] == ['en']

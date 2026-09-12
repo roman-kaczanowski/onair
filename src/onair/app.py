@@ -43,6 +43,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.set_defaults(startup=[])
     parser.add_argument('-p', '--play', dest='startup', metavar='GENRE', action=StoreOrdered)
     parser.add_argument('-c', '--country', dest='startup', metavar='NAME', action=StoreOrdered)
+    parser.add_argument('-l', '--language', dest='startup', metavar='NAME', action=StoreOrdered)
     parser.add_argument('-v', '--volume', dest='startup', metavar='LEVEL', action=StoreOrdered)
     return parser.parse_args(argv)
 
@@ -68,6 +69,13 @@ class OnairCompleter(Completer):
             for country in self._app.client.countries if self._app.client else []:
                 options.append(country.get('name', ''))
                 iso = country.get('iso', '')
+                if iso:
+                    options.append(iso)
+        elif command in {'language', 'l', 'lang', 'languages'}:
+            options = []
+            for language in self._app.client.languages if self._app.client else []:
+                options.append(language.get('name', ''))
+                iso = language.get('iso', '')
                 if iso:
                     options.append(iso)
         elif command == 'help':
