@@ -41,10 +41,26 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog='onair', description='Interactive internet radio for the terminal.')
     parser.add_argument('-V', '--version', action='version', version=f'onair {__version__}')
     parser.set_defaults(startup=[])
-    parser.add_argument('-p', '--play', dest='startup', metavar='GENRE', action=StoreOrdered)
-    parser.add_argument('-c', '--country', dest='startup', metavar='NAME', action=StoreOrdered)
-    parser.add_argument('-l', '--language', dest='startup', metavar='NAME', action=StoreOrdered)
-    parser.add_argument('-v', '--volume', dest='startup', metavar='LEVEL', action=StoreOrdered)
+    parser.add_argument('-p', '--play', dest='startup', metavar='GENRE', action=StoreOrdered, help='Play a genre')
+    parser.add_argument(
+        '-c', '--country', dest='startup', metavar='COUNTRY', action=StoreOrdered, help='Play a station from a country'
+    )
+    parser.add_argument(
+        '-l',
+        '--language',
+        dest='startup',
+        metavar='LANGUAGE',
+        action=StoreOrdered,
+        help='Play a station in a language',
+    )
+    parser.add_argument(
+        '-v',
+        '--volume',
+        dest='startup',
+        metavar='LEVEL',
+        action=StoreOrdered,
+        help='Set volume',
+    )
     return parser.parse_args(argv)
 
 
@@ -127,6 +143,7 @@ class App:
         self.stdout.write(text + end)
 
     def show_startup(self, *, preview_genres: bool = True) -> None:
+        self.stdout_print('')
         self.stdout_print(self.banner)
         self.stdout_print('')
         self.stdout_print(self.welcome)

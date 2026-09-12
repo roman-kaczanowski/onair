@@ -473,3 +473,19 @@ def test_parse_args_version(capsys: pytest.CaptureFixture[str]) -> None:
         parse_args(['--version'])
     assert exc.value.code == 0
     assert f'onair {__version__}' in capsys.readouterr().out
+
+
+def test_parse_args_help(capsys: pytest.CaptureFixture[str]) -> None:
+    from onair.app import parse_args
+
+    with pytest.raises(SystemExit) as exc:
+        parse_args(['-h'])
+    assert exc.value.code == 0
+    help_text = capsys.readouterr().out
+    assert '-p GENRE' in help_text
+    assert '-c COUNTRY' in help_text
+    assert '-l LANGUAGE' in help_text
+    assert 'Play a genre.' in help_text
+    assert 'Play a station from a country.' in help_text
+    assert 'Play a station in a language.' in help_text
+    assert 'Set volume, or change it with +n / -n.' in help_text
