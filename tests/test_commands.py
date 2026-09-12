@@ -362,6 +362,18 @@ def test_volume_relative() -> None:
     assert 'Set volume to 50' in _cli_response(mock_stdout)
 
 
+@mock.patch('onair.commands.play.Player')
+def test_volume_before_playback(mock_player_cls: mock.MagicMock) -> None:
+    mock_player_cls.return_value.is_playing = True
+    cli, mock_stdout = _create()
+    assert not cli.onecmd('volume 30')
+    assert cli.volume == 30
+    assert 'Set volume to 30' in _cli_response(mock_stdout)
+
+    assert not cli.onecmd('play rock')
+    assert mock_player_cls.call_args.kwargs['volume'] == 30
+
+
 def test_parse_volume() -> None:
     assert parse_volume(40, '45') == 45
     assert parse_volume(40, '+10') == 50
@@ -454,15 +466,22 @@ def test_run_line_reports_success_and_failure() -> None:
     assert cli.run_line('help')
 
 
-def test_parse_args_preserves_flag_order() -> None:
+def test_parse_args_runs_volume_before_playback() -> None:
     from onair.app import parse_args
 
     args = parse_args(['--volume', '30', '--play', 'jazz', '--country', 'poland'])
     assert args.startup == ['volume 30', 'play jazz', 'country poland']
     args = parse_args(['--language', 'polish', '--volume', '40'])
-    assert args.startup == ['language polish', 'volume 40']
+    assert args.startup == ['volume 40', 'language polish']
     args = parse_args(['-p', 'jazz', '-c', 'poland', '-l', 'polish', '-v', '30'])
-    assert args.startup == ['p jazz', 'c poland', 'l polish', 'v 30']
+    assert args.startup == ['v 30', 'p jazz', 'c poland', 'l polish']
+
+
+def test_parse_args_starts_random_genre_without_selector() -> None:
+    from onair.app import parse_args
+
+    assert parse_args(['--volume', '30']).startup == ['volume 30', 'play']
+    assert parse_args([]).startup == []
 
 
 def test_parse_args_version(capsys: pytest.CaptureFixture[str]) -> None:
@@ -485,7 +504,7 @@ def test_parse_args_help(capsys: pytest.CaptureFixture[str]) -> None:
     assert '-p GENRE' in help_text
     assert '-c COUNTRY' in help_text
     assert '-l LANGUAGE' in help_text
-    assert 'Play a genre.' in help_text
-    assert 'Play a station from a country.' in help_text
-    assert 'Play a station in a language.' in help_text
-    assert 'Set volume, or change it with +n / -n.' in help_text
+    assert 'Play a genre' in help_text
+    assert 'Play a station from a country' in help_text
+    assert 'Play a station in a language' in help_text
+    assert 'Set volume' in help_text
