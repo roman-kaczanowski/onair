@@ -1,6 +1,6 @@
 from typing import Any
 
-from onair.commands.base import Command
+from onair.commands.base import Command, CommandError
 from onair.utils.colorize import Colors, colorize, render
 from onair.utils.listing import PREVIEW_LIMIT, filter_grouped_titles, format_grouped_titles
 
@@ -44,14 +44,18 @@ class Genres(Command):
                 + app.INDENT
             )
             footer = render(
-                '\n\n' + app.INDENT + '{{y}}Start listening with{{e}} play {genre}{{y}}. For example:{{e}} play kpop\n'
+                '\n\n' + app.INDENT + '{{y}}Start listening with{{e}} play [genre]{{y}}. For example:{{e}} play kpop\n'
             )
 
         if not titles:
             if arg and not preview:
-                return header + colorize(Colors.RED, 'No genres matching ') + arg + '.\n'
-            return header + colorize(
-                Colors.RED, 'The genre list is empty. The Radio Browser API may be unavailable. Try again later.\n'
+                raise CommandError(header + colorize(Colors.RED, 'No genres matching ') + arg + '.\n')
+            raise CommandError(
+                header
+                + colorize(
+                    Colors.RED,
+                    'The genre list is empty. The Radio Browser API may be unavailable. Try again later.\n',
+                )
             )
 
         return header + format_grouped_titles(titles, app.INDENT, limit=PREVIEW_LIMIT if preview else None) + footer

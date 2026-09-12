@@ -1,6 +1,6 @@
 from typing import Any
 
-from onair.commands.base import Command
+from onair.commands.base import Command, CommandError
 from onair.utils.colorize import Colors, colorize
 
 
@@ -17,5 +17,5 @@ class Pause(Command):
                 app.player.pause()
                 return app.INDENT + colorize(Colors.GREEN, 'Playback paused.')
             elif app.player.is_paused:
-                return app.INDENT + colorize(Colors.RED, 'Playback is already paused.')
-        return app.INDENT + colorize(Colors.RED, 'Nothing is playing.')
+                raise CommandError(app.INDENT + colorize(Colors.RED, 'Playback is already paused.'))
+        raise CommandError(app.INDENT + colorize(Colors.RED, 'Nothing is playing.'))

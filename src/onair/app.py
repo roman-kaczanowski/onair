@@ -13,7 +13,7 @@ from prompt_toolkit.history import FileHistory
 
 from onair.client.client import RadioBrowserClient
 from onair.commands import commands
-from onair.commands.base import Command
+from onair.commands.base import Command, CommandError
 from onair.player.player import DEFAULT_VOLUME
 from onair.utils.colorize import Colors, colorize, render
 
@@ -26,8 +26,9 @@ class OnairCompleter(Completer):
 
     def get_completions(self, document: Document, complete_event: Any) -> Iterator[Completion]:
         names = [command.name for command in self._app.commands]
-        stripped = document.text_before_cursor.lstrip()
-        if not stripped or (' ' not in stripped and not document.text_before_cursor.endswith(' ')):
+        segment = document.text_before_cursor.rsplit('|', 1)[-1]
+        stripped = segment.lstrip()
+        if not stripped or (' ' not in stripped and not segment.endswith(' ')):
             for name in names:
                 if name.startswith(stripped):
                     yield Completion(name, start_position=-len(stripped))
@@ -87,16 +88,33 @@ class App:
     def stdout_print(self, text: str, end: str = '\n') -> None:
         self.stdout.write(text + end)
 
-    def onecmd(self, line: str) -> bool:
+    def run_line(self, line: str) -> bool:
         line = line.strip()
         if not line:
-            return False
+            return True
         name, *args = line.split()
         command: type[Command] | None = self._commands_by_name.get(name)
         if command is None:
             self.stdout_print(self.INDENT + colorize(Colors.RED, 'Unknown command: ') + line)
             return False
-        self.stdout_print(command.handle(self, *args))
+        try:
+            self.stdout_print(command.handle(self, *args))
+        except CommandError as exc:
+            self.stdout_print(str(exc))
+            return False
+        return True
+
+    def onecmd(self, line: str) -> bool:
+        # Easter egg: `|` chaining is intentional and undocumented. Do not add it to README or help.
+        line = line.strip()
+        if not line:
+            return False
+        for segment in line.split('|'):
+            segment = segment.strip()
+            if not segment:
+                continue
+            if not self.run_line(segment):
+                break
         return False
 
     def cmdloop(self) -> None:

@@ -1,6 +1,6 @@
 from typing import Any
 
-from onair.commands.base import Command
+from onair.commands.base import Command, CommandError
 from onair.utils.colorize import render
 
 
@@ -22,11 +22,13 @@ class Help(Command):
             for command in app.commands:
                 if arg == command.name:
                     return command.help()
-            return render(
-                app.INDENT
-                + '{{r}}Command "{{e-y}}'
-                + arg
-                + '{{e-r}}" not found. Run{{e}} help {{r}}to list available commands.{{e}}'
+            raise CommandError(
+                render(
+                    app.INDENT
+                    + '{{r}}Command "{{e-y}}'
+                    + arg
+                    + '{{e-r}}" not found. Run{{e}} help {{r}}to list available commands.{{e}}'
+                )
             )
 
         main_help = ''

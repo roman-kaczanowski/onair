@@ -1,6 +1,6 @@
 from typing import Any
 
-from onair.commands.base import Command
+from onair.commands.base import Command, CommandError
 from onair.utils.colorize import Colors, colorize
 
 
@@ -16,4 +16,4 @@ class Stop(Command):
             app.player.stop()
             app.player = None
             return app.INDENT + colorize(Colors.GREEN, 'Stopped.')
-        return app.INDENT + colorize(Colors.RED, 'Nothing is playing.')
+        raise CommandError(app.INDENT + colorize(Colors.RED, 'Nothing is playing.'))

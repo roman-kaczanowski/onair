@@ -3,6 +3,10 @@ from typing import Any
 from onair.utils.colorize import Colors, colorize
 
 
+class CommandError(Exception):
+    """User-facing command failure. The message is printed as-is."""
+
+
 class Command:
     """REPL command bound onto the App shell."""
 
