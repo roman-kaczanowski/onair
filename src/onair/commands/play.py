@@ -2,7 +2,7 @@ import random
 import time
 from typing import Any
 
-from onair.commands.base import Command
+from onair.commands.base import Command, CommandError
 from onair.player.player import DEFAULT_VOLUME, Player
 from onair.utils.colorize import Colors, colorize
 
@@ -62,14 +62,14 @@ def starting_message(app: Any, kind: str, name: str) -> str:
 def try_tune(app: Any, *, tag: str | None = None, countrycode: str | None = None) -> str:
     missing = app.INDENT + colorize(Colors.RED, 'No working stations found. Try another genre or country.')
     if not app.client:
-        return missing
+        raise CommandError(missing)
     for _ in range(3):
         stream = app.client.get_stream(tag, renew_active_station=True, countrycode=countrycode)
         if not stream:
-            return missing
+            raise CommandError(missing)
         if start_stream(app, stream):
             return now_playing(app)
-    return missing
+    raise CommandError(missing)
 
 
 class Play(Command):
@@ -91,7 +91,7 @@ class Play(Command):
                 return now_playing(app)
 
             if not app.client or not app.client.genres:
-                return app.INDENT + colorize(Colors.RED, 'No genres available. Try again later.')
+                raise CommandError(app.INDENT + colorize(Colors.RED, 'No genres available. Try again later.'))
 
             app.stdout_print(app.INDENT + colorize(Colors.GRAY, 'Picking a random genre...'))
             arg = random.choice([genre.get('title', '') for genre in app.client.genres])
@@ -100,7 +100,7 @@ class Play(Command):
         tag = genre.get('id') if genre else None
 
         if not tag:
-            return app.INDENT + colorize(Colors.RED, 'Genre ') + arg + colorize(Colors.RED, ' not found.')
+            raise CommandError(app.INDENT + colorize(Colors.RED, 'Genre ') + arg + colorize(Colors.RED, ' not found.'))
 
         app.stdout_print(app.INDENT + colorize(Colors.GREEN, 'Tuning in...'))
         app.stdout_print(starting_message(app, 'genre', genre.get('title', '')))

@@ -1,6 +1,6 @@
 from typing import Any
 
-from onair.commands.base import Command
+from onair.commands.base import Command, CommandError
 from onair.utils.colorize import Colors, colorize
 
 
@@ -18,7 +18,7 @@ def parse_volume(current: int, arg: str) -> int | None:
 
 class Volume(Command):
     name = 'volume'
-    pattern = 'volume {n|+n|-n}'
+    pattern = 'volume [n|+n|-n]'
     example = (
         'volume 45',
         'volume +10',
@@ -36,7 +36,7 @@ class Volume(Command):
 
             value = parse_volume(app.player.get_volume(), arg)
             if value is None:
-                return (
+                raise CommandError(
                     app.INDENT
                     + colorize(Colors.RED, 'Invalid volume: ')
                     + arg
@@ -45,12 +45,12 @@ class Volume(Command):
             app.player.set_volume(value)
             app.volume = value
             return app.INDENT + colorize(Colors.GREEN, 'Set volume to ') + str(value)
-        return app.INDENT + colorize(Colors.RED, 'Nothing is playing.')
+        raise CommandError(app.INDENT + colorize(Colors.RED, 'Nothing is playing.'))
 
 
 class V(Volume):
     name = 'v'
-    pattern = 'v {n|+n|-n}'
+    pattern = 'v [n|+n|-n]'
     example = (
         'v 45',
         'volume +10',
@@ -61,7 +61,7 @@ class V(Volume):
 
 class Vol(Volume):
     name = 'vol'
-    pattern = 'vol {n|+n|-n}'
+    pattern = 'vol [n|+n|-n]'
     example = (
         'vol 45',
         'v +10',

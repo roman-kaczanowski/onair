@@ -42,7 +42,7 @@ def test_genres() -> None:
     cli_response = _cli_response(mock_stdout)
     assert '- GENRES -' in cli_response
     assert 'R - rock' in cli_response
-    assert 'play {genre}' in cli_response
+    assert 'play [genre]' in cli_response
 
 
 def test_genres_filter() -> None:
@@ -177,7 +177,7 @@ def test_play_next_and_previous(mock_player_cls: mock.MagicMock) -> None:
 def test_next_without_station() -> None:
     cli, mock_stdout = _create()
     assert not cli.onecmd('next')
-    assert 'play {genre}' in _cli_response(mock_stdout)
+    assert 'play [genre]' in _cli_response(mock_stdout)
 
 
 def test_previous_without_history() -> None:
@@ -192,7 +192,7 @@ def test_countries() -> None:
     text = _cli_response(mock_stdout)
     assert '- COUNTRIES -' in text
     assert 'Poland (PL)' in text
-    assert 'country {name}' in text
+    assert 'country [name]' in text
 
 
 def test_countries_filter() -> None:
@@ -364,3 +364,35 @@ def test_complete_commands_and_genres() -> None:
     assert 'countries' in texts('co')
     assert 'dance' in texts('genres da')
     assert 'Poland' in texts('countries P')
+    assert 'volume' in texts('play rock | vo')
+    assert 'rock' in texts('play jazz | play ro')
+    assert 'Poland' in texts('play jazz | country P')
+
+
+@mock.patch('onair.commands.play.Player')
+def test_pipe_runs_both_commands(mock_player_cls: mock.MagicMock) -> None:
+    mock_player_cls.return_value.is_playing = True
+    mock_player_cls.return_value.get_volume.return_value = 50
+    cli, mock_stdout = _create()
+    assert not cli.onecmd('play rock | volume 40')
+    mock_player_cls.return_value.set_volume.assert_any_call(40)
+    output = _cli_output(mock_stdout)
+    assert 'Now playing:' in output
+    assert 'Set volume to 40' in output
+
+
+def test_pipe_stops_on_failure() -> None:
+    cli, mock_stdout = _create()
+    player = mock.Mock()
+    cli.player = player
+    assert not cli.onecmd('play nosuchgenre | volume 40')
+    player.set_volume.assert_not_called()
+    output = _cli_output(mock_stdout)
+    assert 'not found' in output
+    assert 'Set volume' not in output
+
+
+def test_run_line_reports_success_and_failure() -> None:
+    cli, _mock_stdout = _create()
+    assert not cli.run_line('play nosuchgenre')
+    assert cli.run_line('help')

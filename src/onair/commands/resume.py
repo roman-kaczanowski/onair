@@ -1,6 +1,6 @@
 from typing import Any
 
-from onair.commands.base import Command
+from onair.commands.base import Command, CommandError
 from onair.commands.play import now_playing
 from onair.utils.colorize import Colors, colorize
 
@@ -15,8 +15,8 @@ class Resume(Command):
     def handle(app: Any, *args: str) -> str:
         if app.player:
             if app.player.is_playing:
-                return app.INDENT + colorize(Colors.RED, 'Playback is already running.')
+                raise CommandError(app.INDENT + colorize(Colors.RED, 'Playback is already running.'))
             elif app.player.is_paused:
                 app.player.play()
                 return now_playing(app)
-        return app.INDENT + colorize(Colors.RED, 'Nothing is playing.')
+        raise CommandError(app.INDENT + colorize(Colors.RED, 'Nothing is playing.'))

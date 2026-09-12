@@ -1,6 +1,6 @@
 from typing import Any
 
-from onair.commands.base import Command
+from onair.commands.base import Command, CommandError
 from onair.utils.colorize import Colors, colorize
 
 
@@ -18,7 +18,7 @@ class Mute(Command):
         if app.player:
             app.player.mute()
             return app.INDENT + colorize(Colors.GREEN, 'Muted.')
-        return app.INDENT + colorize(Colors.RED, 'Nothing is playing.')
+        raise CommandError(app.INDENT + colorize(Colors.RED, 'Nothing is playing.'))
 
 
 class M(Mute):

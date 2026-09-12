@@ -1,6 +1,6 @@
 from typing import Any
 
-from onair.commands.base import Command
+from onair.commands.base import Command, CommandError
 from onair.commands.play import now_playing, start_stream
 from onair.utils.colorize import Colors, colorize
 
@@ -17,7 +17,13 @@ class Next(Command):
     @staticmethod
     def handle(app: Any, *args: str) -> str:
         if not app.client or not app.client.has_pool:
-            return app.INDENT + colorize(Colors.RED, 'No station tuned yet. Start with play {genre} or country {name}.')
+            raise CommandError(
+                app.INDENT
+                + colorize(
+                    Colors.RED,
+                    'No station tuned yet. Start with play [genre] or country [name].',
+                )
+            )
 
         for _ in range(3):
             stream = app.client.next_station()
@@ -25,7 +31,7 @@ class Next(Command):
                 break
             if start_stream(app, stream):
                 return now_playing(app)
-        return app.INDENT + colorize(Colors.RED, 'No other stations found.')
+        raise CommandError(app.INDENT + colorize(Colors.RED, 'No other stations found.'))
 
 
 class Skip(Next):
