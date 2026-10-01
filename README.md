@@ -4,6 +4,8 @@
 
 Turn your terminal into an internet radio. onair is a small interactive shell for finding and playing stations by genre, country, or language.
 
+![onair demo](https://raw.githubusercontent.com/roman-kaczanowski/onair/main/docs/demo.gif)
+
 ## Features
 
 - Browse genres, countries, and languages, optionally filtered by name.
