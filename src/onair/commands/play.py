@@ -43,10 +43,13 @@ def start_stream(app: Any, stream: str) -> bool:
     return False
 
 
-def now_playing(app: Any) -> str:
+def station_label(app: Any) -> str:
     station = app.client.active_station if app.client else None
-    name = station.name if station else ''
-    return app.INDENT + colorize(Colors.BLUE, f'Now playing: {name}')
+    return f'Now playing: {station.name if station else ""}'
+
+
+def now_playing(app: Any) -> str:
+    return app.INDENT + colorize(Colors.BLUE, station_label(app))
 
 
 def starting_message(app: Any, kind: str, name: str) -> str:

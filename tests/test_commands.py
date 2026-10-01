@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 from mock_client import MockClient
 
-from onair.app import App
+from onair.app import App, meter_frame
 from onair.client.client import Station
 from onair.commands import commands
 from onair.commands.play import start_stream
@@ -28,6 +28,27 @@ def _cli_response(mock_stdout: mock.MagicMock) -> str:
 
 def _cli_output(mock_stdout: mock.MagicMock) -> str:
     return _clear_coloring(''.join(call[0][0] for call in mock_stdout.write.call_args_list))
+
+
+def test_meter_frame() -> None:
+    assert meter_frame(0, paused=True) == meter_frame(9, paused=True) == '....'
+    frames = [meter_frame(tick, paused=False) for tick in range(12)]
+    assert len(set(frames)) > 1
+    assert all(len(frame) == 4 and set(frame) <= set('.:') for frame in frames)
+    assert meter_frame(3, paused=False) == meter_frame(3, paused=False)
+
+
+def test_status_meter_rests_when_paused() -> None:
+    cli, _mock_stdout = _create()
+    cli.client.active_station = Station(uuid='1', name='Jazz FM', url='http://example.test/jazz')
+
+    cli.player = mock.Mock(is_playing=True)
+    playing = _clear_coloring(cli.status_message().value)
+    assert set(playing[:4]) <= set('.:')
+    assert playing.endswith(' Now playing: Jazz FM')
+
+    cli.player.is_playing = False
+    assert _clear_coloring(cli.status_message().value) == '.... Now playing: Jazz FM'
 
 
 def test_wrong_command() -> None:
