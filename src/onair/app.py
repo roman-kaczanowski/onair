@@ -1,6 +1,8 @@
 import argparse
 import os
+import random
 import sys
+import time
 from collections.abc import Iterator, Sequence
 from pathlib import Path
 from typing import Any
@@ -11,16 +13,30 @@ from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.document import Document
 from prompt_toolkit.formatted_text import ANSI
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit.styles import Style
 
 from onair import __version__
 from onair.client.client import RadioBrowserClient
 from onair.commands import commands
 from onair.commands.base import Command, CommandError
 from onair.commands.genres import home_preview
+from onair.commands.play import station_label
 from onair.player.player import DEFAULT_VOLUME
 from onair.utils.colorize import Colors, colorize, render
 
 HISTORY_PATH = Path.home() / '.onair_history'
+_METER_INTERVAL = 0.4
+_METER_SYMBOLS = '.:'
+_METER_WIDTH = 4
+_METER_REST = _METER_SYMBOLS[0] * _METER_WIDTH
+_STATUS_STYLE = Style.from_dict({'bottom-toolbar': 'noreverse', 'bottom-toolbar.text': 'noreverse'})
+
+
+def meter_frame(tick: int, *, paused: bool) -> str:
+    if paused:
+        return _METER_REST
+    rng = random.Random(tick)
+    return ''.join(rng.choice(_METER_SYMBOLS) for _ in range(_METER_WIDTH))
 
 
 class StoreOrdered(argparse.Action):
@@ -146,6 +162,11 @@ class App:
         if not test:
             self.show_startup(preview_genres=preview_genres)
 
+    def status_message(self) -> ANSI:
+        playing = bool(self.player and self.player.is_playing)
+        frame = meter_frame(int(time.monotonic() / _METER_INTERVAL), paused=not playing)
+        return ANSI(colorize(Colors.GRAY, f'{frame} ') + colorize(Colors.BLUE, station_label(self)))
+
     def stdout_print(self, text: str, end: str = '\n') -> None:
         self.stdout.write(text + end)
 
@@ -190,10 +211,15 @@ class App:
             history=FileHistory(str(HISTORY_PATH)),
             auto_suggest=AutoSuggestFromHistory(),
             completer=OnairCompleter(self),
+            style=_STATUS_STYLE,
         )
         while True:
             try:
-                line = session.prompt(ANSI(self.prompt))
+                session.bottom_toolbar = self.status_message if self.player else None
+                line = session.prompt(
+                    ANSI(self.prompt),
+                    refresh_interval=_METER_INTERVAL if self.player else 0,
+                )
                 self.onecmd(line)
             except KeyboardInterrupt:
                 continue
