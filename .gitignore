@@ -13,6 +13,18 @@ __pycache__/
 .vscode/
 .DS_Store
 
+.cursor/
+.cursorignore
+.cursorrules
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.codex/
+AGENTS.override.md
+.opencode/
+opencode.json
+opencode.jsonc
+
 build/
 dist/
 sdist/

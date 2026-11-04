@@ -1,6 +1,6 @@
 [project]
 name = "onair"
-version = "1.1.2"
+version = "1.1.3"
 description = "Interactive internet radio for the terminal"
 readme = "README.md"
 license = "MIT"
@@ -35,13 +35,14 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/onair"]
+exclude = ["src/onair/**/AGENTS.md"]
 
 [tool.uv]
 default-groups = ["dev", "test"]
 
 
 [dependency-groups]
-dev = ["ruff", "ipython", "pre-commit", "poethepoet", "mdformat", "mdformat-gfm", "mdformat-tables"]
+dev = ["ruff", "ipython", "pre-commit", "poethepoet", "mdformat", "mdformat-frontmatter", "mdformat-gfm", "mdformat-tables"]
 test = ["pytest"]
 
 [tool.ruff]
